@@ -1,0 +1,1092 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>ERP Mundo 3D</title>
+<meta name="theme-color" content="#C6963C">
+<meta name="description" content="ERP de Mundo 3D, Merchy Prints y Nathan3D">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ERP Mundo 3D">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="config.js"></script>
+<script src="sheetdb.js"></script>
+</head><body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: barra lateral de módulos + área de trabajo; en móvil, módulos como pestañas desplazables arriba */
+:root{
+  /* Paleta de marca Mundo 3D (oro #EAC66C→#C6963C, negro #0A0A0A) sobre fondo blanco, a pedido de Jonathan */
+  --bg:#f6f5f2; --surface:#ffffff; --surface2:#faf9f6; --fg:#141414; --muted:#6b665e; --line:#e6e2da;
+  --gold1:#EAC66C; --gold2:#C6963C; --gold-grad:linear-gradient(180deg,#EAC66C,#C6963C); --ink:#0A0A0A; --gold-ink:#8a6418;
+  --accent:#8a6418; --accent-soft:#f8efd9; --chart:#C6963C; --chart2:#cfcac0; --blue:#2f4fbf; --blue-soft:#e6ebfa;
+  --ok:#1f7a4d; --ok-soft:#e1f3e9; --warn:#a86200; --warn-soft:#fdf0d9; --bad:#b42323; --bad-soft:#fbe4e4;
+  --mp:#6b35b8; --mp-soft:#efe6fb; --n3:#0f7c80; --n3-soft:#dcf2f2;
+  --display:"Montserrat",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;line-height:1.5}
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+nav.side{background:var(--surface);border-right:1px solid var(--line);padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:12px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+.brand{font-family:var(--display);font-weight:700;font-size:18px;margin-bottom:2px}
+.brand small{display:block;font:500 11px var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px}
+nav.side a{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:6px;color:var(--fg);text-decoration:none;font-weight:500}
+nav.side a:hover{background:var(--surface2)}
+nav.side a.on{background:var(--accent-soft);color:var(--accent)}
+nav.side a .n{font:500 11px var(--mono);color:var(--muted)}
+nav.side .grp{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 10px 4px}
+main{padding-block:24px 64px;padding-left:24px;padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0;display:flex;flex-direction:column;gap:20px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--display);font-size:26px;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-size:17px;margin:0}
+.muted{color:var(--muted)}
+.btn{font:600 13px var(--body);padding:8px 14px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.sm{padding:4px 9px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+@media (max-width:1200px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi .v{font-size:20px}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--muted)}
+.kpi .v{font:700 24px var(--display);font-variant-numeric:tabular-nums;margin-top:2px}
+.kpi .s{font-size:12px;color:var(--muted)}
+.kpi.alert .v{color:var(--bad)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--surface2)}
+td.r,th.r{text-align:right;white-space:nowrap}
+[hidden]{display:none!important}
+.pill{display:inline-block;font:500 11px var(--mono);padding:2px 7px;border-radius:4px;white-space:nowrap;background:var(--surface2);color:var(--muted)}
+.pill.RECIBIDO{background:var(--surface2);color:var(--fg)}
+.pill.DISEÑO,.pill.IMPRESO,.pill.LIJADO,.pill.PINTADO,.pill.EMBALADO{background:var(--blue-soft);color:var(--blue)}
+.pill.ENVIADO{background:var(--warn-soft);color:var(--warn)}
+.pill.POR_COBRAR,.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.CAMBIO{background:var(--accent-soft);color:var(--accent)}
+.pill.COMPLETADO{background:var(--ok-soft);color:var(--ok)}
+.late{color:var(--bad);font-weight:600}
+.soon{color:var(--warn);font-weight:600}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input,select,textarea{font:14px var(--body);padding:7px 10px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--fg);min-width:0}
+input[type=search]{flex:1 1 200px}
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(220px,1fr);gap:12px;overflow-x:auto;padding-bottom:6px}
+.col{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:120px}
+.col h3{font:600 12px var(--mono);margin:0 0 2px;display:flex;justify-content:space-between}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:4px}
+.card .t{font-weight:600}
+.card .row{display:flex;justify-content:space-between;gap:6px;font-size:12px;color:var(--muted)}
+.card .mv{display:flex;gap:6px;margin-top:4px}
+.bars{display:flex;flex-direction:column;gap:6px}
+.bar{display:grid;grid-template-columns:70px 1fr 90px;gap:8px;align-items:center;font-size:12px;font-variant-numeric:tabular-nums}
+.bar .track{height:10px;background:var(--surface2);border-radius:3px;overflow:hidden;display:flex}
+.bar .fill{background:var(--accent);height:100%}
+.bar .fill.g{background:var(--muted)}
+.kpi.link{text-decoration:none;color:inherit}.kpi.link:hover{border-color:var(--accent)}
+.kpi.warnk .v{color:var(--warn)}
+.up{color:var(--ok);font-weight:600}.down{color:var(--bad);font-weight:600}
+.cols.wide{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+@media (max-width:1000px){.cols.wide{grid-template-columns:1fr}}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.ph a{font-size:13px;text-decoration:none}
+table.dl td{vertical-align:middle}
+tr.ghead td{font:600 12px var(--mono);text-transform:uppercase;letter-spacing:.04em;padding-top:14px;background:transparent!important}
+.gdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:6px}
+.gdot.bad{background:var(--bad)}.gdot.warn{background:var(--warn)}.gdot.soon{background:var(--blue)}
+.dchip{display:inline-block;font:600 11px var(--mono);padding:3px 7px;border-radius:4px;background:var(--surface2);color:var(--muted);white-space:nowrap}
+.dchip.bad{background:var(--bad-soft);color:var(--bad)}.dchip.warn{background:var(--warn-soft);color:var(--warn)}.dchip.soon{background:var(--blue-soft);color:var(--blue)}
+.alerts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.alerts li{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;padding:8px 12px;border-radius:8px;border-left:3px solid var(--warn);background:var(--warn-soft)}
+.alerts li.bad{border-left-color:var(--bad);background:var(--bad-soft)}
+.alerts .ids{display:flex;gap:4px;flex-wrap:wrap}
+.stack{display:flex;height:14px;border-radius:4px;overflow:hidden;gap:2px}
+.seg.s0,.sw.s0{background:var(--accent)}.seg.s1,.sw.s1{background:var(--blue)}.seg.s2,.sw.s2{background:var(--ok)}.seg.s3,.sw.s3{background:var(--muted)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.quickadd{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.fab{position:fixed;right:calc(max(16px,env(safe-area-inset-right,0px)) + 4px);bottom:calc(20px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:#fff;font:600 28px var(--display);box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer;z-index:5}
+.cliblock{display:flex;flex-direction:column;gap:8px}
+.cliinfo{font-size:13px;color:var(--fg);padding:0 2px;min-height:0}
+.cliinfo.ok{background:var(--ok-soft);padding:8px 10px;border-radius:7px}
+.cliinfo.new{background:var(--blue-soft);color:var(--blue);padding:8px 10px;border-radius:7px}
+.quick{display:flex;gap:4px;margin-top:4px}
+.saldo{grid-column:1/-1;font-size:14px}
+details summary{cursor:pointer;color:var(--blue);font-size:13px;font-weight:500}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0}dl.kv dt{color:var(--muted)}dl.kv dd{margin:0;user-select:all;min-width:0;overflow-wrap:anywhere}
+@media (max-width:760px){.quickadd{display:none}}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.fabmenu{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(88px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;align-items:flex-end;z-index:6}
+.fabmenu .btn{box-shadow:0 4px 14px rgba(0,0,0,.18);padding:10px 16px}
+.chipsel{display:flex;flex-wrap:wrap;gap:6px}
+.chipsel input{position:absolute;opacity:0;pointer-events:none}
+.chipsel span{display:inline-block;padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--fg);cursor:pointer}
+.chipsel input:checked+span{background:var(--accent);border-color:var(--accent);color:#fff}
+.chipsel input:focus-visible+span{outline:2px solid var(--blue);outline-offset:2px}
+.monthnav{display:flex;align-items:center;gap:10px;margin-top:4px;font-size:15px}
+.kpis.k4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:900px){.kpis.k4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi .v.ok,.okc{color:var(--ok)}.kpi .v.bad{color:var(--bad)}
+table.pl td{padding:7px 4px}table.pl td.ind{padding-left:18px;color:var(--muted)}
+table.pl tr.sub td{font-weight:600;border-top:1px solid var(--fg)}
+table.pl tr.tot td{font:700 17px var(--display);border-top:2px solid var(--fg);border-bottom:0}
+.bar.wide{grid-template-columns:minmax(90px,170px) 1fr 100px}
+.track.dual{height:8px;margin:2px 0;background:var(--surface2);border-radius:3px;overflow:hidden;display:flex}.track.dual .fill{background:var(--accent);height:100%}.track.dual .fill.g{background:var(--muted)}
+tr.sel td{background:var(--accent-soft)}
+.flabel{font-size:12px;color:var(--muted)}
+.combo{position:relative}.combo input{width:100%}
+.dd{position:absolute;left:0;right:0;top:calc(100% + 4px);margin:0;padding:4px;list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 28px rgba(0,0,0,.18);max-height:300px;overflow:auto;z-index:10}
+.dd li{padding:8px 10px;border-radius:6px;display:flex;justify-content:space-between;gap:10px;cursor:pointer;font-size:13px}
+.dd li .muted{font-size:12px}.dd li .r{text-align:right;white-space:nowrap}
+.dd li.on{background:var(--accent-soft)}
+.dd li.ddh{cursor:default;font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:6px 10px}
+.dd li.ddnew{color:var(--blue);font-weight:600;border-top:1px solid var(--line);margin-top:4px;position:sticky;bottom:-4px;background:var(--surface);justify-content:flex-start;gap:4px}
+.dd li.ddnew.on{background:var(--blue-soft)}
+.selrow{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.newcard{border:1px solid var(--blue);background:var(--blue-soft);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.newhead{display:flex;justify-content:space-between;align-items:center;color:var(--blue)}
+dialog{overflow:visible}dialog form{max-height:calc(100vh - 40px);overflow:auto}
+.pill.mp{background:#efe6fb;color:#6b35b8}
+
+.pill.mp{background:var(--mp-soft);color:var(--mp)}
+.btn.mpb{background:var(--mp);border-color:var(--mp);color:#fff}
+nav.side a.mpnav.on{background:var(--mp-soft);color:var(--mp)}
+.eyebrow.mp{font:600 11px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--mp)}
+.mptoggle{flex-direction:row!important;align-items:center;gap:10px!important;padding:10px 12px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:14px!important;color:var(--fg)!important}
+.mptoggle input{position:absolute;opacity:0;pointer-events:none}
+.mptoggle .sw2{flex:none;width:36px;height:20px;border-radius:10px;background:var(--line);position:relative;transition:background .15s}
+.mptoggle .sw2::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+.mptoggle input:checked+.sw2{background:var(--mp)}.mptoggle input:checked+.sw2::after{left:18px}
+.mptoggle input:focus-visible+.sw2{outline:2px solid var(--blue);outline-offset:2px}
+form.ismp .mptoggle{border-color:var(--mp);background:var(--mp-soft)}
+.mpbox{border:1px solid var(--mp);border-radius:8px;padding:10px;background:var(--surface)}
+.mpcalc{display:flex;flex-direction:column;justify-content:center;gap:2px;font-size:13px}
+.fill.mpf{background:var(--mp)!important}.fill.okf{background:var(--ok)!important}
+/* modo Merchy: mismo ERP, color morado */
+body.mpmode{--accent:#6b35b8;--accent-soft:#efe6fb;--gold-ink:#5a2ba0;--chart:#7c4dcc;--ink:#fff;--gold2:#6b35b8;--gold-grad:linear-gradient(180deg,#8b5ad6,#6b35b8)}
+body.n3dmode{--accent:#0f7c80;--accent-soft:#dcf2f2;--gold-ink:#0b6366;--chart:#14959a;--ink:#fff;--gold2:#0f7c80;--gold-grad:linear-gradient(180deg,#17a2a7,#0f7c80)}
+body:not(.m3dmode) .m3d-only,body:not(.mpmode) .mp-only,body:not(.n3dmode) .n3d-only{display:none!important}
+/* inicio */
+body.home nav.side,body.home .fab,body.home .fabmenu{display:none!important}
+body.home .app{grid-template-columns:1fr}
+.home{max-width:980px;margin:0 auto;padding-top:min(6vh,48px);display:flex;flex-direction:column;gap:22px}
+.home h1{font-size:clamp(26px,4vw,38px);margin:0}
+.bigs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.big{display:flex;flex-direction:column;justify-content:space-between;gap:28px;min-height:280px;padding:28px;border-radius:18px;text-decoration:none;color:#fff;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s}
+.big:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.18)}
+.big:focus-visible{outline:3px solid var(--fg);outline-offset:3px}
+.big.m3d{background:linear-gradient(180deg,#EAC66C,#C6963C);color:#0A0A0A}.big.m3d::after{background:rgba(10,10,10,.08)}.big.mp{color:#fff}.big.mp{background:linear-gradient(180deg,#6e3fc0,#3f1d78)}
+.big .bt{font:700 clamp(24px,2.8vw,36px)/1.05 var(--display);letter-spacing:-.02em}
+.big .bs{font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.08em;opacity:.85;margin-bottom:8px}
+.big .bk{display:flex;gap:22px;flex-wrap:wrap}.big .bk div{display:flex;flex-direction:column}.big .bk b{font:700 22px var(--display)}.big .bk span{font-size:12px;opacity:.85}
+.big .go{font-weight:600;font-size:15px}
+.big::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.1)}
+.homefoot{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+nav.side a.homelink{font-size:13px;color:var(--muted)}
+@media (max-width:980px){.bigs{grid-template-columns:1fr}}@media (max-width:760px){.big{min-height:200px;padding:22px}}
+/* líneas merchy */
+.mplh,.mpl{display:grid;grid-template-columns:minmax(0,2fr) 62px 80px 80px 80px 32px;gap:6px;align-items:center}
+.mplh{font-size:11px;color:var(--muted)}
+.mpl input{min-width:0}
+.mpl .l-sub{grid-column:1/-1;font-size:12px;color:var(--muted);margin-top:-2px}
+form.mpdirect .mplh,form.mpdirect .mpl{grid-template-columns:minmax(0,2fr) 62px 96px 96px 32px}
+form.mpdirect .l-c,form.mpdirect .h-c{display:none}
+@media (max-width:760px){form.mpdirect .mpl{grid-template-columns:1fr 1fr 1fr 32px}}
+#mplines{display:flex;flex-direction:column;gap:8px}
+@media (max-width:760px){.mplh{display:none}.mpl{grid-template-columns:1fr 1fr 1fr 1fr 32px}.mpl .l-mod{grid-column:1/-1}.mpl input::placeholder{font-size:12px}}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);padding:0;width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+dialog form{padding:20px;display:flex;flex-direction:column;gap:14px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fgrid label,.full{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);min-width:0}
+.full{grid-column:1/-1}
+.chk{flex-direction:row!important;align-items:center;gap:8px!important;color:var(--fg)!important;font-size:14px!important}
+.actions{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.toast{z-index:7;position:fixed;bottom:calc(90px + env(safe-area-inset-bottom,0px));right:max(16px,env(safe-area-inset-right,0px));background:var(--fg);color:var(--bg);padding:10px 14px;border-radius:8px;font-weight:500}
+.banner{background:var(--warn-soft);color:var(--warn);padding:10px 14px;border-radius:8px}
+@media (max-width:760px){
+  .app{grid-template-columns:1fr}
+  nav.side{position:static;height:auto;flex-direction:row;overflow-x:auto;padding-block:10px;padding-right:max(16px,env(safe-area-inset-right,0px));border-right:0;border-bottom:1px solid var(--line);gap:4px}
+  .brand,nav.side .grp{display:none}
+  nav.side a{white-space:nowrap}
+  main{padding-left:max(16px,env(safe-area-inset-left,0px))}
+  .fgrid{grid-template-columns:1fr}
+}
+
+/* marca: oro sobre negro */
+.btn.primary,.fab,.chipsel input:checked+span{background:var(--gold-grad)!important;border-color:var(--gold2)!important;color:var(--ink)!important}
+.btn.primary:hover{filter:brightness(1.06)}
+nav.side a.brand{display:block;padding:0;background-color:transparent}
+.kpi .v{font-size:21px;white-space:nowrap}
+nav.side{background:#fff;border-color:var(--line)}
+.brand{font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--gold-ink)!important}
+nav.side a.on{background:var(--accent-soft);color:var(--accent)}
+h1{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.01em}
+h1{color:var(--gold-ink)}.kpi .v{color:var(--fg)}
+.kpi .v.ok{color:var(--ok)}.kpi .v.bad{color:var(--bad)}
+.kpi,.panel{border-color:var(--line)}
+.eyebrow{color:var(--gold-ink)}
+.big .bt{font-weight:800;text-transform:uppercase}
+.home h1{color:var(--fg)}
+dialog h2{color:var(--gold-ink)}form.isn3 .n3toggle{border-color:var(--n3);background:var(--n3-soft)}
+form.ismp h2{color:var(--mp)}
+input,select,textarea{background:var(--surface2);color:var(--fg);border-color:var(--line)}
+.btn.mpb{color:#fff!important}
+.kpi,.panel{background:var(--surface);box-shadow:0 1px 2px rgba(20,20,20,.04)}
+.n3toggle input:checked+.sw2{background:var(--n3)}
+.n3box{border:1px solid var(--n3);border-radius:8px;padding:10px;background:var(--surface)}
+.pill.n3{background:var(--n3-soft);color:var(--n3)}
+.big.n3{background:linear-gradient(180deg,#17a2a7,#0b5f63);color:#fff}
+/* gráficos */
+.viz{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:14px}
+.viz .panel{margin:0}
+.viz svg{width:100%;height:auto;display:block}
+.viz svg text{fill:var(--muted);font:11px var(--body)}
+.viz svg text.vl{fill:var(--fg);font-weight:600}
+.viz svg rect.bar:hover{opacity:.8}
+.leg{display:flex;gap:14px;font-size:12px;color:var(--muted);margin:-4px 0 6px}.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.hb{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) auto;gap:8px;align-items:center;font-size:13px;margin:7px 0}
+.hb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbt{height:10px;background:var(--surface2);border:1px solid var(--line);border-radius:5px;overflow:hidden}.hbf{height:100%;background:var(--chart);border-radius:0 4px 4px 0}
+.donutw{display:flex;align-items:center;gap:14px}.donutw svg{width:120px;flex:none}
+@media (max-width:1100px){.viz{grid-template-columns:1fr 1fr}.viz>:first-child{grid-column:1/-1}}
+@media (max-width:760px){.viz{grid-template-columns:1fr}}
+.bar .fill,.track.dual .fill{background:var(--gold-grad)}
+/* entrada */
+.login{position:fixed;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;padding:16px;overflow:auto}
+.logincard{width:min(400px,100%);background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.06)}
+.logincard h2{font:800 26px var(--display);text-transform:uppercase;margin:0;color:var(--gold-ink)}
+.logincard p{margin:0}
+.logincard label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.logincard .btn{padding:11px 14px;font-size:15px}
+.loginlogo{border-radius:14px}
+nav.side a[data-logout]{margin-top:auto}
+@media (max-width:760px){nav.side a[data-logout]{margin-top:0}}
+</style>
+
+<div class="app">
+  <nav class="side" aria-label="Módulos">
+    <a href="#inicio" class="brand" style="text-decoration:none;color:inherit">Mundo 3D<small>ERP · Perú</small></a>
+    <a href="#inicio" data-v="inicio" class="homelink">← Elegir negocio</a>
+    <div class="quickadd"><button class="btn primary" data-act="nuevo" title="Atajo: tecla N">+ Nuevo pedido</button><button class="btn ok" data-act="cobrar">Cobrar saldo</button><button class="btn" data-act="gasto">− Registrar gasto</button><button class="btn" data-act="cliente">+ Nuevo cliente</button></div>
+    <a href="#resumen" data-v="resumen" class="m3d-only">Dashboard</a><a href="#merchy" data-v="merchy" class="mp-only">Dashboard <span class="n" id="n-merchy"></span></a><a href="#nathan" data-v="nathan" class="n3d-only">Dashboard</a>
+    <div class="grp">Ventas</div>
+    <a href="#pedidos" data-v="pedidos">Pedidos <span class="n" id="n-pedidos"></span></a>
+    <a href="#produccion" data-v="produccion">Producción <span class="n" id="n-prod"></span></a>
+    <a href="#cobros" data-v="cobros">Cobros <span class="n" id="n-cobros"></span></a>
+    <a href="#clientes" data-v="clientes">Clientes <span class="n" id="n-clientes"></span></a>
+    <div class="grp">Operación</div>
+    <a href="#inventario" data-v="inventario" class="m3d-only">Inventario <span class="n" id="n-inv"></span></a>
+    <a href="#gastos" data-v="gastos">Gastos</a>
+    <a href="#balance" data-v="balance">Balance del mes</a>
+    <div class="grp n3d-only">Internacional</div>
+    <a href="#freelance" data-v="freelance" class="n3d-only">Freelance US$ <span class="n" id="n-free"></span></a>
+    <div class="grp">Cuenta</div>
+    <a href="#" data-logout class="homelink">Cerrar sesión</a>
+  </nav>
+  <main id="main"><div class="empty">Cargando datos…</div></main>
+</div>
+
+<div class="fabmenu" id="fabmenu" hidden><button class="btn" data-act="cliente">+ Nuevo cliente</button><button class="btn" data-act="gasto">− Registrar gasto</button><button class="btn ok" data-act="cobrar">Cobrar saldo</button><button class="btn primary" data-act="nuevo">+ Nuevo pedido</button></div>
+<button class="fab" data-act="fab" aria-label="Acciones rápidas" aria-expanded="false">+</button>
+<dialog id="dlg"><form id="dlgForm" method="dialog"></form></dialog>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const STAGES=["RECIBIDO","DISEÑO","IMPRESO","LIJADO","PINTADO","EMBALADO","ENVIADO","POR COBRAR","CAMBIO","COMPLETADO"];
+const FUENTES=["INSTAGRAM","WHATSAPP","FACEBOOK"];
+const S={pedidos:[],clientes:[],freelance:[],inventario:[],gastos:[],ready:false,error:null};
+let db=null;
+const RAW={pedidos:[],gastos:[]};
+let MODE=(()=>{try{return (m=>["mp","n3d"].includes(m)?m:"m3d")(localStorage.getItem("erp-modo"))}catch(_){return "m3d"}})();
+function virtM3D(p){return {...p,_src:p,_virt:"mp",cliente:"Mundo 3D",clienteId:"__m3d__",total:costoDe(p),adelanto:0,segundo:+p.mpCobrado||0,pagos:p.mpPagos||[],fechaSaldo:p.mpFechaCobro||"",fechaAdelanto:"",metodoSaldo:"",status:p.mpStatus||p.status}}
+function virtN3D(p){const por=esMPDirecto(p)?"Merchy Prints":"Mundo 3D";return {...p,_src:p,_virt:"n3d",negocio:"n3d",items:undefined,mpVia:undefined,origen3:por,cliente:por,clienteId:"__"+por,pedido:"Diseño · "+(p.pedido||""),total:+p.n3dPago||0,adelanto:0,segundo:+p.n3dCobrado||0,pagos:p.n3dPagos||[],fechaSaldo:p.n3dFechaCobro||"",fechaAdelanto:"",metodoSaldo:"",entrega:p.n3dEntrega||p.entrega,nota:p.n3dNota||"",status:p.n3dStatus||"DISEÑO"}}
+const NEG=()=>MODE==="mp"?"merchy":MODE;
+const pedidosN3D=()=>[...RAW.pedidos.filter(p=>p.negocio==="n3d"),...RAW.pedidos.filter(p=>p.n3d&&p.negocio!=="n3d").map(virtN3D)];
+function proyectar(){
+  if(MODE==="mp"){S.pedidos=RAW.pedidos.filter(esMerchy).map(p=>esMPDirecto(p)?p:virtM3D(p));S.gastos=RAW.gastos.filter(g=>g.negocio==="merchy")}
+  else if(MODE==="n3d"){S.pedidos=pedidosN3D();S.gastos=RAW.gastos.filter(g=>g.negocio==="n3d")}
+  else{S.pedidos=RAW.pedidos.filter(p=>!esMPDirecto(p)&&p.negocio!=="n3d");S.gastos=RAW.gastos.filter(g=>(g.negocio||"m3d")==="m3d")}
+}
+function setModo(m){if(m===MODE)return;MODE=m;try{localStorage.setItem("erp-modo",m)}catch(_){}views._cli=null;proyectar()}
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const soles=n=>"S/ "+(+n||0).toLocaleString("es-PE",{minimumFractionDigits:2,maximumFractionDigits:2});
+const usd=n=>"US$ "+(+n||0).toLocaleString("es-PE",{minimumFractionDigits:2,maximumFractionDigits:2});
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const days=(a,b)=>Math.round((new Date(a+"T00:00")-new Date(b+"T00:00"))/864e5);
+const fdate=s=>s?new Date(s+"T00:00").toLocaleDateString("es-PE",{day:"numeric",month:"short",year:"2-digit"}):"—";
+const saldo=p=>Math.max(0,(+p.total||0)-(+p.adelanto||0)-(+p.segundo||0));
+const abierto=p=>p.status!=="COMPLETADO";
+const deuda=p=>abierto(p)?saldo(p):0;
+function toast(t){const e=$("#toast");e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2600)}
+function entregaCell(p){
+  if(!p.entrega)return '<span class="muted">—</span>';
+  if(!abierto(p))return esc(fdate(p.entrega));
+  const d=days(p.entrega,today());
+  if(d<0)return `<span class="late">${esc(fdate(p.entrega))} · ${-d}d tarde</span>`;
+  if(d<=3)return `<span class="soon">${esc(fdate(p.entrega))} · en ${d}d</span>`;
+  return esc(fdate(p.entrega));
+}
+const pill=s=>`<span class="pill ${esc(String(s).replace(/ /g,"_"))}">${esc(s)}</span>`;
+
+/* ---------- vistas ---------- */
+const views={
+resumen(){
+  const t=today(), act=S.pedidos.filter(abierto);
+  const dd=p=>p.entrega?days(p.entrega,t):null;
+  const venc=act.filter(p=>p.entrega&&dd(p)<0).sort((a,b)=>a.entrega.localeCompare(b.entrega));
+  const hoy=act.filter(p=>p.entrega&&dd(p)>=0&&dd(p)<=1);
+  const semana=act.filter(p=>p.entrega&&dd(p)>=2&&dd(p)<=7);
+  const quince=act.filter(p=>p.entrega&&dd(p)>=8&&dd(p)<=14);
+  const sinFecha=act.filter(p=>!p.entrega);
+  const porCobrar=act.reduce((a,p)=>a+deuda(p),0);
+  const mk=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  const now=new Date(), mes=mk(now), mesAnt=mk(new Date(now.getFullYear(),now.getMonth()-1,1));
+  const ventas=m=>S.pedidos.filter(p=>(p.creado||"").startsWith(m)).reduce((a,p)=>a+(+p.total||0),0);
+  const gastos=m=>S.gastos.filter(g=>(g.fecha||"").startsWith(m)).reduce((a,g)=>a+(+g.monto||0),0);
+  const vM=ventas(mes), vA=ventas(mesAnt);
+  const diaMes=now.getDate(), diasMes=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const proy=diaMes?vM/diaMes*diasMes:0;
+  const n90=S.pedidos.filter(p=>p.creado&&days(t,p.creado)<=90&&+p.total>0);
+  const _s=n90.map(p=>+p.total).sort((a,b)=>a-b);const ticket=_s.length?(_s.length%2?_s[(_s.length-1)/2]:(_s[_s.length/2-1]+_s[_s.length/2])/2):0;
+  const bajo=S.inventario.filter(i=>(+i.stock||0)<=(+i.minimo||0));
+  const pct=(a,b)=>b?Math.round((a-b)/b*100):null;
+  const ch=pct(vM,vA);
+  // ventas 12 meses
+  const ms=[];for(let i=11;i>=0;i--)ms.push(mk(new Date(now.getFullYear(),now.getMonth()-i,1)));
+  const vm=ms.map(m=>({m,v:ventas(m),n:S.pedidos.filter(p=>(p.creado||"").startsWith(m)).length,g:gastos(m)}));
+  const mx=Math.max(1,...vm.map(x=>Math.max(x.v,x.g)));
+  const W=640,H=200,pl=8,pb=22,bw=(W-pl*2)/12;
+  const svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Ventas por mes, últimos 12 meses" style="display:block">
+    ${[0.25,.5,.75,1].map(f=>`<line x1="0" x2="${W}" y1="${(H-pb)-(H-pb-14)*f}" y2="${(H-pb)-(H-pb-14)*f}" style="stroke:var(--line)" stroke-width="1"/>`).join("")}
+    ${vm.map((x,i)=>{const h=(H-pb-14)*x.v/mx, y=H-pb-h, X=pl+i*bw+bw*.18, w=bw*.64, cur=x.m===mes;
+      const gh=(H-pb-14)*x.g/mx;
+      return `<g><title>${esc(x.m)}: ${esc(soles(x.v))} en ${x.n} pedidos${x.g?" · gastos "+esc(soles(x.g)):""}</title>
+      <rect x="${X}" y="${y}" width="${w}" height="${Math.max(h,0)}" rx="3" fill="${cur?"var(--accent)":"var(--accent-soft)"}" ${cur?"":'style="stroke:var(--accent)" stroke-width="1"'}/>
+      ${x.g?`<rect x="${X+w*.3}" y="${H-pb-gh}" width="${w*.4}" height="${gh}" style="fill:var(--muted)" opacity=".7"/>`:""}
+      <text x="${X+w/2}" y="${H-6}" text-anchor="middle" font-size="11" style="fill:var(--muted)">${esc(new Date(x.m+"-01T00:00").toLocaleDateString("es-PE",{month:"short"}).replace(".",""))}</text>
+      ${cur||x.v===Math.max(...vm.map(z=>z.v))?`<text x="${X+w/2}" y="${y-4}" text-anchor="middle" font-size="11" font-weight="600" style="fill:var(--fg)">${esc(Math.round(x.v/1000*10)/10)}k</text>`:""}</g>`}).join("")}
+  </svg>`;
+  // producción por etapa
+  const stg=STAGES.filter(s=>s!=="COMPLETADO").map(s=>({s,ps:act.filter(p=>p.status===s)})).filter(x=>x.ps.length);
+  const stMax=Math.max(1,...stg.map(x=>x.ps.length));
+  // deudores
+  const deud=act.filter(p=>deuda(p)>0).sort((a,b)=>deuda(b)-deuda(a)).slice(0,6);
+  // canales 90 días
+  const can={};n90.forEach(p=>{const k=p.fuente||"SIN CANAL";const c=can[k]||(can[k]={n:0,v:0});c.n++;c.v+=+p.total});
+  const canTot=Object.values(can).reduce((a,c)=>a+c.v,0)||1;
+  // top clientes 12 meses
+  const cl={};S.pedidos.filter(p=>p.creado&&days(t,p.creado)<=365).forEach(p=>{const k=(p.cliente||"").trim();if(!k)return;const kk=p.clienteId||normKey(k);const c=cl[kk]||(cl[kk]={k:p.clienteId||k,name:k,v:0,n:0});c.v+=+p.total||0;c.n++});
+  const topCl=Object.values(cl).sort((a,b)=>b.v-a.v).slice(0,5);
+  // alertas
+  const alertas=[];
+  const viejos=venc.filter(p=>dd(p)<-30);
+  if(viejos.length)alertas.push(["bad",`${viejos.length} pedido(s) vencidos hace más de 30 días siguen abiertos. Revisa si ya se entregaron y actualiza la etapa.`,viejos]);
+  const atrRec=venc.filter(p=>p.status==="RECIBIDO");
+  if(atrRec.length)alertas.push(["bad",`${atrRec.length} pedido(s) vencidos que todavía no pasan de RECIBIDO.`,atrRec]);
+  const sinMonto=act.filter(p=>!+p.total);
+  if(sinMonto.length)alertas.push(["warn",`${sinMonto.length} pedido(s) en curso sin monto total.`,sinMonto]);
+  if(sinFecha.length)alertas.push(["warn",`${sinFecha.length} pedido(s) en curso sin fecha de entrega.`,sinFecha]);
+  const sinAdel=act.filter(p=>+p.total>0&&!+p.adelanto);
+  if(sinAdel.length)alertas.push(["warn",`${sinAdel.length} pedido(s) sin adelanto registrado.`,sinAdel]);
+  if(bajo.length)alertas.push(["warn",`${bajo.length} material(es) por debajo del mínimo: ${bajo.map(i=>i.nombre).join(", ")}.`,[]]);
+  const row=p=>{const d=dd(p);const lbl=d==null?"sin fecha":d<0?`${-d} d tarde`:d===0?"hoy":d===1?"mañana":`en ${d} d`;
+    return `<tr class="click" data-edit="${esc(p.id)}"><td><span class="dchip ${d==null?"":d<0?"bad":d<=1?"warn":d<=7?"soon":""}">${esc(lbl)}</span></td><td><b>#${p.num}</b> ${esc(p.pedido||"(sin descripción)")}<div class="muted" style="font-size:12px">${esc(p.cliente)} · ${esc(fdate(p.entrega))}</div></td><td>${pill(p.status)}</td><td class="r">${deuda(p)?soles(deuda(p)):'<span class="muted">—</span>'}</td></tr>`};
+  const grp=(titulo,arr,cls)=>(arr=arr.slice().sort((a,b)=>(a.entrega||"").localeCompare(b.entrega||"")),arr.length)?`<tr class="ghead"><td colspan="4"><span class="gdot ${cls}"></span>${esc(titulo)} <span class="muted">· ${arr.length}</span></td></tr>${arr.map(row).join("")}`:"";
+  const proximos=[...hoy,...semana,...quince].sort((a,b)=>a.entrega.localeCompare(b.entrega));
+  return `
+  <div class="top"><div><h1>Dashboard Mundo 3D</h1><div class="muted">${esc(now.toLocaleDateString("es-PE",{weekday:"long",day:"numeric",month:"long",year:"numeric"}))} · se actualiza con cada cambio</div></div>
+  <button class="btn primary" data-act="nuevo">+ Nuevo pedido</button></div>
+  <div class="kpis">
+    <a class="kpi link" href="#pedidos"><div class="l">Pedidos en curso</div><div class="v">${act.length}</div><div class="s">${act.filter(p=>p.status!=="RECIBIDO").length} ya en producción</div></a>
+    <div class="kpi ${venc.length?"alert":""}"><div class="l">Vencidos</div><div class="v">${venc.length}</div><div class="s">entrega ya pasó</div></div>
+    <div class="kpi ${hoy.length+semana.length?"warnk":""}"><div class="l">Vencen en 7 días</div><div class="v">${hoy.length+semana.length}</div><div class="s">${hoy.length} hoy o mañana</div></div>
+    <a class="kpi link" href="#cobros"><div class="l">Por cobrar</div><div class="v">${soles(porCobrar)}</div><div class="s">${act.filter(p=>deuda(p)>0).length} pedidos con saldo</div></a>
+    <div class="kpi"><div class="l">Ventas de ${esc(now.toLocaleDateString("es-PE",{month:"long"}))}</div><div class="v">${soles(vM)}</div><div class="s">${ch==null?"sin datos del mes anterior":`<span class="${ch>=0?"up":"down"}">${ch>=0?"▲":"▼"} ${Math.abs(ch)}%</span> vs mes anterior`} · proyección ${soles(proy)}</div></div>
+    <div class="kpi"><div class="l">Pedido típico</div><div class="v">${soles(ticket)}</div><div class="s">mediana, últimos 90 días · ${n90.length} pedidos</div></div>
+  </div>
+  ${visuales()}
+  ${alertas.length?`<div class="panel"><h2>Para revisar</h2><ul class="alerts">${alertas.map(([c,txt,arr])=>`<li class="${c}"><span>${esc(txt)}</span>${arr.length?`<span class="ids">${arr.slice(0,8).map(p=>`<button class="btn sm" data-edit="${esc(p.id)}">#${p.num}</button>`).join("")}</span>`:""}</li>`).join("")}</ul></div>`:""}
+
+  <div class="cols wide">
+    <div class="panel"><div class="ph"><h2>Entregas</h2><a href="#produccion" class="muted">Ver producción →</a></div>
+      ${venc.length+proximos.length+sinFecha.length?`<div class="tbl"><table class="dl"><tbody>
+        ${grp("Vencidos",venc,"bad")}${grp("Hoy y mañana",hoy,"warn")}${grp("Esta semana",semana,"soon")}${grp("Próxima semana",quince,"")}${grp("Sin fecha",sinFecha,"")}
+      </tbody></table></div>`:`<div class="empty">No hay entregas pendientes en las próximas dos semanas.</div>`}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <div class="panel"><h2>Producción en curso</h2>
+        ${stg.length?`<div class="bars">${stg.map(x=>`<div class="bar"><span>${esc(x.s)}</span><div class="track"><div class="fill" style="width:${x.ps.length/stMax*100}%"></div></div><span style="text-align:right">${x.ps.length}</span></div>`).join("")}</div>`:`<div class="empty">Sin pedidos en producción.</div>`}
+      </div>
+      <div class="panel"><div class="ph"><h2>Mayores saldos</h2><a href="#cobros" class="muted">Cobros →</a></div>
+        ${deud.length?`<div class="tbl"><table><tbody>${deud.map(p=>`<tr class="click" data-pago="${esc(p.id)}"><td><b>${esc(p.cliente)}</b><div class="muted" style="font-size:12px">#${p.num} ${esc(p.pedido)}</div></td><td>${pill(p.status)}</td><td class="r"><b>${soles(deuda(p))}</b><div class="muted" style="font-size:12px;white-space:nowrap">de ${soles(p.total)}</div></td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">Nadie te debe.</div>`}
+      </div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="panel"><h2>Ventas por mes</h2>${svg}
+      <div class="muted" style="font-size:12px">Monto total de los pedidos registrados cada mes${S.gastos.length?"; barra gris: gastos":""}. Pasa el cursor sobre una barra para ver el detalle.</div></div>
+    <div class="panel"><h2>Canales · últimos 90 días</h2>
+      ${Object.keys(can).length?`<div class="stack">${Object.entries(can).sort((a,b)=>b[1].v-a[1].v).map(([k,c],i)=>`<div class="seg s${i}" style="width:${c.v/canTot*100}%" title="${esc(k)}"></div>`).join("")}</div>
+      <table><tbody>${Object.entries(can).sort((a,b)=>b[1].v-a[1].v).map(([k,c],i)=>`<tr><td><span class="sw s${i}"></span>${esc(k)}</td><td class="r">${c.n} pedidos</td><td class="r">${soles(c.v)}</td><td class="r muted">${Math.round(c.v/canTot*100)}%</td></tr>`).join("")}</tbody></table>`:`<div class="empty">Sin pedidos en los últimos 90 días.</div>`}
+      <h2>Mejores clientes · 12 meses</h2>
+      <table><tbody>${topCl.map(c=>`<tr class="click" data-cli="${esc(c.k)}"><td>${esc(c.name)}</td><td class="r muted">${c.n} pedido${c.n>1?"s":""}</td><td class="r"><b>${soles(c.v)}</b></td></tr>`).join("")}</tbody></table>
+    </div>
+  </div>`;
+},
+pedidos(){
+  const f=views._pf||(views._pf={q:"",st:"abiertos"});
+  let rows=S.pedidos.slice().sort((a,b)=>b.num-a.num);
+  if(f.st==="abiertos")rows=rows.filter(abierto);else if(f.st!=="todos")rows=rows.filter(p=>p.status===f.st);
+  if(MODE==="mp");else if(f.neg==="m3d")rows=rows.filter(esM3D);else if(f.neg==="merchy")rows=rows.filter(esMerchy);
+  if(f.q){const q=f.q.toLowerCase();rows=rows.filter(p=>(p.cliente+" "+p.pedido+" "+p.num).toLowerCase().includes(q))}
+  return `<div class="top"><h1>Pedidos</h1><button class="btn primary" data-act="nuevo">+ Nuevo pedido</button></div>
+  <div class="filters"><input type="search" id="pq" placeholder="Buscar cliente, pedido o número" value="${esc(f.q)}">
+  <select id="pneg" aria-label="Filtro Merchy" class="m3d-only"><option value="todos">Todos los pedidos</option><option value="m3d">Sin Merchy Prints</option><option value="merchy">Con Merchy Prints</option></select><select id="pst"><option value="abiertos">En curso</option><option value="todos">Todos</option>${STAGES.map(s=>`<option>${s}</option>`).join("")}</select>
+  <span class="muted">${rows.length} pedidos</span></div>
+  <div class="panel"><div class="tbl"><table><thead><tr><th>#</th><th>Cliente</th><th>Pedido</th><th>Canal</th><th>Etapa</th><th>Entrega</th><th class="r">Total</th><th class="r">Saldo</th></tr></thead><tbody>
+  ${rows.map(p=>`<tr class="click" data-edit="${esc(p.id)}"><td>${p.num}</td><td>${esc(p.cliente)}</td><td>${esc(p.pedido)}${mpTag(p)}</td><td class="muted">${esc(p.fuente)}</td><td>${pill(p.status)}</td><td>${entregaCell(p)}</td><td class="r">${p.total?soles(p.total):'<span class="muted">—</span>'}</td><td class="r">${deuda(p)?`<b>${soles(deuda(p))}</b>`:'<span class="muted">—</span>'}</td></tr>`).join("")}
+  </tbody></table></div>${rows.length?"":`<div class="empty">No hay pedidos con ese filtro.</div>`}</div>`;
+},
+produccion(){
+  const cols=STAGES.filter(s=>s!=="COMPLETADO");
+  const done=S.pedidos.filter(p=>p.status==="COMPLETADO").length;
+  return `<div class="top"><div><h1>Producción</h1><div class="muted">Mueve cada pedido a la siguiente etapa con las flechas. ${done} pedidos completados no se muestran.</div></div><button class="btn primary" data-act="nuevo">+ Nuevo pedido</button></div>
+  <div class="board">${cols.map(s=>{const ps=S.pedidos.filter(p=>p.status===s).sort((a,b)=>(a.entrega||"9").localeCompare(b.entrega||"9"));
+   return `<div class="col"><h3><span>${esc(s)}</span><span class="muted">${ps.length}</span></h3>
+   ${ps.map(p=>`<div class="card"><div class="row"><span>#${p.num}</span><span>${entregaCell(p)}</span></div><div class="t">${esc(p.pedido||"(sin descripción)")}${mpTag(p)}</div><div class="row"><span>${esc(p.cliente)}</span><span>${deuda(p)?soles(deuda(p)):""}</span></div>
+     <div class="mv"><button class="btn sm" data-mv="-1" data-id="${esc(p.id)}" ${STAGES.indexOf(s)===0?"disabled":""} aria-label="Etapa anterior">◀</button><button class="btn sm" data-mv="1" data-id="${esc(p.id)}" aria-label="Siguiente etapa">▶</button><button class="btn sm" data-edit="${esc(p.id)}">Editar</button><button class="btn sm ok" data-pago="${esc(p.id)}">Entregar</button></div></div>`).join("")}
+   </div>`}).join("")}</div>`;
+},
+cobros(){
+  const rows=S.pedidos.filter(p=>deuda(p)>0).sort((a,b)=>(a.entrega||"9").localeCompare(b.entrega||"9"));
+  const tot=rows.reduce((a,p)=>a+deuda(p),0);
+  const sinMonto=S.pedidos.filter(p=>abierto(p)&&!p.total).length;
+  return `<div class="top"><div><h1>Cobros</h1><div class="muted">Saldo pendiente de pedidos en curso: <b>${soles(tot)}</b>. Los pedidos COMPLETADO se cuentan como pagados.</div></div></div>
+  ${sinMonto?`<div class="banner">${sinMonto} pedido(s) en curso no tienen monto total registrado.</div>`:""}
+  <div class="panel"><div class="tbl"><table><thead><tr><th>#</th><th>Cliente</th><th>Pedido</th><th>Etapa</th><th>Entrega</th><th class="r">Total</th><th class="r">Pagado</th><th class="r">Saldo</th><th></th></tr></thead><tbody>
+  ${rows.map(p=>`<tr><td>${p.num}</td><td>${esc(p.cliente)}</td><td>${esc(p.pedido)}${mpTag(p)}</td><td>${pill(p.status)}</td><td>${entregaCell(p)}</td><td class="r">${soles(p.total)}</td><td class="r">${soles((+p.adelanto||0)+(+p.segundo||0))}</td><td class="r"><b>${soles(deuda(p))}</b></td><td><button class="btn sm" data-pago="${esc(p.id)}">Cobrar saldo</button></td></tr>`).join("")}
+  </tbody></table></div>${rows.length?"":`<div class="empty">No hay saldos pendientes.</div>`}</div>`;
+},
+clientes(){
+  if(views._cli){const c=S.clientes.find(x=>x.id===views._cli);if(c)return clienteDetalle(c);views._cli=null}
+  const sinFicha=S.pedidos.filter(p=>!p.clienteId);
+  const o=views._co||(views._co={q:"",sort:"total"});
+  let rows=S.clientes.map(c=>({c,st:statsCliente(c)}));
+  if(o.q){const q=normKey(o.q);rows=rows.filter(r=>normKey([r.c.nombre,r.c.telefono,r.c.instagram,r.c.email,r.c.distrito].join(" ")).includes(q))}
+  const sorts={total:(a,b)=>b.st.total-a.st.total,reciente:(a,b)=>(b.st.ultima||"").localeCompare(a.st.ultima||""),pedidos:(a,b)=>b.st.n-a.st.n,nombre:(a,b)=>a.c.nombre.localeCompare(b.c.nombre),deuda:(a,b)=>b.st.deuda-a.st.deuda};
+  rows.sort(sorts[o.sort]||sorts.total);
+  const rec=S.clientes.filter(c=>statsCliente(c).n>1).length;
+  return `<div class="top"><div><h1>Clientes</h1><div class="muted">${S.clientes.length} clientes · ${rec} han comprado más de una vez</div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="cliente">+ Nuevo cliente</button><button class="btn primary" data-act="nuevo">+ Nuevo pedido</button></div></div>
+  ${sinFicha.length?`<div class="banner" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><span>${sinFicha.length} pedido(s) aún no están vinculados a una ficha de cliente. Al vincularlos, cada cliente acumula su historial de compras.</span><button class="btn primary" data-act="migrar">Crear fichas y vincular</button></div>`:""}
+  <div class="filters"><input type="search" id="cq" placeholder="Buscar por nombre, teléfono, Instagram o distrito" value="${esc(o.q)}">
+  <select id="csort" aria-label="Ordenar"><option value="total">Más compras (S/)</option><option value="reciente">Compra más reciente</option><option value="pedidos">Más pedidos</option><option value="deuda">Mayor deuda</option><option value="nombre">Nombre A-Z</option></select>
+  <span class="muted">${rows.length} resultados</span></div>
+  <div class="panel"><div class="tbl"><table><thead><tr><th>Cliente</th><th>Canal</th><th class="r">Pedidos</th><th class="r">Comprado</th><th class="r">Debe</th><th>Última compra</th></tr></thead><tbody>
+  ${rows.map(({c,st})=>`<tr class="click" data-cli="${esc(c.id)}"><td><b>${esc(c.nombre)}</b>${st.n>1?' <span class="pill COMPLETADO">recurrente</span>':""}<div class="muted" style="font-size:12px">${esc([c.telefono,c.instagram&&"@"+c.instagram.replace(/^@/,""),c.distrito].filter(Boolean).join(" · ")||"sin datos de contacto")}</div></td><td class="muted">${esc(c.canal)}</td><td class="r">${st.n}</td><td class="r">${st.total?soles(st.total):"—"}</td><td class="r">${st.deuda?`<b>${soles(st.deuda)}</b>`:"—"}</td><td>${st.ultima?`${esc(fdate(st.ultima))}<div class="muted" style="font-size:12px">hace ${days(today(),st.ultima)} d</div>`:"—"}</td></tr>`).join("")}
+  </tbody></table></div>${rows.length?"":`<div class="empty">${S.clientes.length?"Ningún cliente coincide con la búsqueda.":"Aún no hay fichas de clientes."}</div>`}</div>`;
+},
+inventario(){
+  const rows=S.inventario.slice().sort((a,b)=>(a.nombre||"").localeCompare(b.nombre||""));
+  return `<div class="top"><div><h1>Inventario</h1><div class="muted">Filamento, resina, pintura y empaques.</div></div><button class="btn primary" data-act="inv">+ Agregar material</button></div>
+  ${rows.length?`<div class="panel"><div class="tbl"><table><thead><tr><th>Material</th><th>Tipo</th><th class="r">Stock</th><th class="r">Mínimo</th><th class="r">Costo unit.</th><th>Estado</th><th></th></tr></thead><tbody>
+  ${rows.map(i=>{const low=(+i.stock||0)<=(+i.minimo||0);return `<tr><td class="click" data-inv="${esc(i.id)}"><b>${esc(i.nombre)}</b></td><td class="muted">${esc(i.tipo)}</td><td class="r">${esc(i.stock)} ${esc(i.unidad)}</td><td class="r">${esc(i.minimo)} ${esc(i.unidad)}</td><td class="r">${i.costo?soles(i.costo):"—"}</td><td>${low?'<span class="pill bad">Reponer</span>':'<span class="pill COMPLETADO">OK</span>'}</td>
+  <td style="white-space:nowrap"><button class="btn sm" data-stk="-1" data-id="${esc(i.id)}" aria-label="Restar uno">−1</button> <button class="btn sm" data-stk="1" data-id="${esc(i.id)}" aria-label="Sumar uno">+1</button> <button class="btn sm" data-inv="${esc(i.id)}">Editar</button></td></tr>`}).join("")}
+  </tbody></table></div></div>`:`<div class="empty">Aún no hay materiales. Agrega el primero, por ejemplo “PLA negro 1 kg”, con su stock y el mínimo para que te avise cuando reponer.</div>`}`;
+},balance(){
+  const now=new Date();const mk=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  const m=views._bm||(views._bm=mk(now));
+  const [y,mo]=m.split("-").map(Number);
+  const prev=mk(new Date(y,mo-2,1)),next=mk(new Date(y,mo,1));
+  const R=resumenMes(m),P=resumenMes(prev);
+  const nombre=(n=>n.charAt(0).toUpperCase()+n.slice(1))(new Date(y,mo-1,1).toLocaleDateString("es-PE",{month:"long",year:"numeric"}));
+  const delta=(a,b)=>{if(!b)return"";const v=Math.round((a-b)/Math.abs(b)*100);return `<span class="${v>=0?"up":"down"}">${v>=0?"▲":"▼"} ${Math.abs(v)}%</span> vs ${esc(new Date(y,mo-2,1).toLocaleDateString("es-PE",{month:"short"}))}`};
+  const margen=R.cobrado?Math.round(R.res/R.cobrado*100):null;
+  const cats={};R.gas.forEach(g=>{const k=g.categoria||"Otros";cats[k]=(cats[k]||0)+(+g.monto||0)});
+  const cMax=Math.max(1,...Object.values(cats));
+  const met={};R.ing.forEach(x=>{const k=x.metodo||(x.est?"Sin registrar":"Sin método");met[k]=(met[k]||0)+x.monto});
+  const movs=[...R.ing.map(x=>({f:x.fecha,d:`${x.tipo} #${x.p.num} · ${x.p.cliente}`,s:x.metodo||"",v:x.monto,est:x.est,id:x.p.id})),...R.gas.map(g=>({f:g.fecha,d:g.concepto,s:g.categoria,v:-(+g.monto||0),gid:g.id,id:g.pid}))].sort((a,b)=>(b.f||"").localeCompare(a.f||""));
+  const hist=[];for(let i=5;i>=0;i--){const mm=mk(new Date(y,mo-1-i,1));const r=resumenMes(mm);hist.push({mm,...r})}
+  const hMax=Math.max(1,...hist.map(h=>Math.max(h.cobrado,h.gastos)));
+  const porCobrar=S.pedidos.filter(abierto).reduce((a,p)=>a+deuda(p),0);
+  return `<div class="top"><div><h1>Balance</h1><div class="monthnav"><button class="btn sm" data-bm="${prev}" aria-label="Mes anterior">◀</button><b>${esc(nombre)}</b><button class="btn sm" data-bm="${next}" aria-label="Mes siguiente" ${next>mk(now)?"disabled":""}>▶</button></div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="gasto">+ Registrar gasto</button><button class="btn primary" data-act="cobrar">Cobrar saldo</button></div></div>
+  <div class="kpis k4">
+    <div class="kpi"><div class="l">Cobrado</div><div class="v ok">${soles(R.cobrado)}</div><div class="s">${[R.ing.length+" pagos",delta(R.cobrado,P.cobrado)].filter(Boolean).join(" · ")}</div></div>
+    <div class="kpi"><div class="l">Gastos</div><div class="v bad">${soles(R.gastos)}</div><div class="s">${[R.gas.length+" registros",delta(R.gastos,P.gastos)].filter(Boolean).join(" · ")}</div></div>
+    <div class="kpi ${R.res<0?"alert":""}"><div class="l">Resultado del mes</div><div class="v">${soles(R.res)}</div><div class="s">${margen==null?"sin cobros":`margen ${margen}% de lo cobrado`}</div></div>
+    <div class="kpi"><div class="l">Pedidos nuevos</div><div class="v">${R.ventas.length}</div><div class="s">por ${soles(R.vendido)} · ${R.entregados} completados</div></div>
+  </div>
+  ${R.estimado?`<div class="banner">${soles(R.estimado)} de lo cobrado es estimado: son saldos de pedidos completados que no tenían el pago registrado. Se ubican en la fecha de entrega.</div>`:""}
+  <div class="cols">
+    <div class="panel"><h2>Estado del mes</h2>
+      <table class="pl"><tbody>
+        <tr><td>Adelantos cobrados</td><td class="r">${soles(R.ing.filter(x=>x.tipo==="Adelanto").reduce((a,x)=>a+x.monto,0))}</td></tr>
+        <tr><td>Saldos cobrados</td><td class="r">${soles(R.ing.filter(x=>x.tipo==="Saldo").reduce((a,x)=>a+x.monto,0))}</td></tr>
+        <tr class="sub"><td>Total ingresos</td><td class="r">${soles(R.cobrado)}</td></tr>
+        ${Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td class="ind">${esc(k)}</td><td class="r">− ${soles(v)}</td></tr>`).join("")||`<tr><td class="ind muted">Sin gastos registrados</td><td class="r">—</td></tr>`}
+        <tr class="sub"><td>Total gastos</td><td class="r">− ${soles(R.gastos)}</td></tr>
+        <tr class="tot"><td>Resultado</td><td class="r ${R.res<0?"late":""}">${soles(R.res)}</td></tr>
+      </tbody></table>
+      <div class="muted" style="font-size:12px">Por cobrar hoy en pedidos en curso: ${soles(porCobrar)}.</div>
+    </div>
+    <div class="panel"><h2>Gastos por categoría</h2>
+      ${Object.keys(cats).length?`<div class="bars">${Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="bar wide"><span>${esc(k)}</span><div class="track"><div class="fill" style="width:${v/cMax*100}%"></div></div><span style="text-align:right">${soles(v)}</span></div>`).join("")}</div>`:`<div class="empty">No hay gastos este mes. <button class="btn sm" data-act="gasto">Registrar el primero</button></div>`}
+      <h2>Ingresos por medio de pago</h2>
+      ${Object.keys(met).length?`<table><tbody>${Object.entries(met).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="r">${soles(v)}</td></tr>`).join("")}</tbody></table>`:`<div class="muted">Sin cobros este mes.</div>`}
+    </div>
+  </div>
+  <div class="panel"><h2>Últimos 6 meses</h2>
+    <div class="tbl"><table><thead><tr><th>Mes</th><th>Cobrado</th><th></th><th class="r">Gastos</th><th class="r">Resultado</th></tr></thead><tbody>
+    ${hist.map(h=>`<tr class="click ${h.mm===m?"sel":""}" data-bm="${h.mm}"><td style="text-transform:capitalize">${esc(new Date(h.mm+"-01T00:00").toLocaleDateString("es-PE",{month:"short",year:"2-digit"}))}</td><td class="r" style="width:110px">${soles(h.cobrado)}</td>
+      <td style="width:40%"><div class="track dual"><div class="fill" style="width:${h.cobrado/hMax*100}%"></div></div><div class="track dual"><div class="fill g" style="width:${h.gastos/hMax*100}%"></div></div></td>
+      <td class="r">${soles(h.gastos)}</td><td class="r ${h.res<0?"late":""}"><b>${soles(h.res)}</b></td></tr>`).join("")}
+    </tbody></table></div></div>
+  <div class="panel"><h2>Movimientos de ${esc(nombre)}</h2>
+    ${movs.length?`<div class="tbl"><table><thead><tr><th>Fecha</th><th>Detalle</th><th>Tipo</th><th class="r">Monto</th></tr></thead><tbody>
+    ${movs.map(x=>`<tr class="click" ${x.id?`data-edit="${esc(x.id)}"`:`data-gasto="${esc(x.gid)}"`}><td>${esc(fdate(x.f))}</td><td>${esc(x.d)}${x.est?' <span class="pill">estimado</span>':""}</td><td class="muted">${esc(x.s)}</td><td class="r ${x.v<0?"late":"okc"}">${x.v<0?"− ":"+ "}${soles(Math.abs(x.v))}</td></tr>`).join("")}
+    </tbody></table></div>`:`<div class="empty">Sin movimientos este mes.</div>`}
+  </div>`;
+},merchy(){
+  const now=new Date();const mk=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  const m=views._mm||(views._mm=mk(now));const [y,mo]=m.split("-").map(Number);
+  const prev=mk(new Date(y,mo-2,1)),next=mk(new Date(y,mo,1));
+  const all=S.pedidos.filter(esMerchy);
+  const gm=S.gastos.filter(g=>g.negocio==="merchy");
+  const calc=mm=>{const ps=all.filter(p=>(p.creado||"").startsWith(mm));
+    const venta=ps.reduce((a,p)=>a+ventaMP(p),0),costo=ps.reduce((a,p)=>a+costoProvDe(p),0),gas=gm.filter(g=>(g.fecha||"").startsWith(mm)).reduce((a,g)=>a+(+g.monto||0),0);
+    return {ps,venta,costo,gas,gan:venta-costo,neta:venta-costo-gas,uds:ps.reduce((a,p)=>a+(+p.cantidad||0),0),sp:ps.filter(sinProv).length}};
+  const R=calc(m),P=calc(prev);
+  const nombre=(n=>n.charAt(0).toUpperCase()+n.slice(1))(new Date(y,mo-1,1).toLocaleDateString("es-PE",{month:"long",year:"numeric"}));
+  const delta=(a,b)=>{if(!b)return"";const v=Math.round((a-b)/Math.abs(b)*100);return ` · <span class="${v>=0?"up":"down"}">${v>=0?"▲":"▼"} ${Math.abs(v)}%</span>`};
+  const act=all.filter(abierto);
+  const t=today();const venc=act.filter(p=>p.entrega&&p.entrega<t),prox=act.filter(p=>p.entrega&&p.entrega>=t&&days(p.entrega,t)<=7);
+  const prod={};all.forEach(p=>{const L=itemsDe(p);if(!L.length){L.push({modelo:p.pedido,cantidad:p.cantidad,costoUnit:0,precioUnit:0})}
+    L.forEach(l=>{const k=normKey(l.modelo);if(!k)return;const o=prod[k]||(prod[k]={n:l.modelo,uds:0,venta:0,gan:0});const q=+l.cantidad||0,v=q*lineaVenta(p,l);o.uds+=q;o.venta+=v;o.gan+=v-q*(+l.costoProv||0)})});
+  const topP=Object.values(prod).sort((a,b)=>b.gan-a.gan).slice(0,6);
+  const hist=[];for(let i=5;i>=0;i--){const mm=mk(new Date(y,mo-1-i,1));hist.push({mm,...calc(mm)})}
+  const hMax=Math.max(1,...hist.map(h=>h.venta));
+  const mg=R.venta?Math.round(R.gan/R.venta*100):null;
+  const row=p=>{const g=ventaMP(p)-costoProvDe(p);return `<tr class="click" data-edit="${esc(p.id)}"><td>${p.num}</td><td>${esc(fdate(p.creado))}</td><td><b>${esMPDirecto(p)?esc(p.cliente):"Mundo 3D"}</b> <span class="pill ${esMPDirecto(p)?"mp":""}">${esMPDirecto(p)?"cliente directo":"pedido de M3D"}</span>${esMPDirecto(p)?"":`<div class="muted" style="font-size:12px">para ${esc(p._src?p._src.cliente:p.cliente)}</div>`}<div class="muted" style="font-size:12px">${itemsDe(p).length>1?itemsDe(p).map(l=>`${+l.cantidad||0} × ${esc(l.modelo)} <span style="opacity:.75">(${l.costoProv?soles(l.costoProv)+" → ":""}${soles(lineaVenta(p,l))})</span>`).join("<br>"):esc(p.pedido)}</div></td><td class="r">${+p.cantidad||"—"}</td><td class="r">${costoProvDe(p)&&+p.cantidad?(itemsDe(p).length>1?"prom. ":"")+soles(costoProvDe(p)/p.cantidad):"—"}</td><td class="r">${itemsDe(p).length>1?"prom. ":""}${(esMPDirecto(p)?p.precioUnit:p.costoUnit)?soles(esMPDirecto(p)?p.precioUnit:p.costoUnit):"—"}</td><td class="r">${soles(ventaMP(p))}</td><td class="r ${g<0?"late":"okc"}"><b>${soles(g)}</b></td><td>${pill(p.status)}</td></tr>`};
+  return `<div class="top"><div><div class="eyebrow mp">Merchy Prints</div><h1>Dashboard Merchy Prints</h1><div class="muted" style="font-size:13px">Negocio independiente. Vende a sus propios clientes y a Mundo 3D cuando un pedido de Mundo 3D lo necesita.</div><div class="monthnav"><button class="btn sm" data-mm="${prev}" aria-label="Mes anterior">◀</button><b>${esc(nombre)}</b><button class="btn sm" data-mm="${next}" aria-label="Mes siguiente" ${next>mk(now)?"disabled":""}>▶</button></div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="gastomerchy">− Gasto Merchy</button><button class="btn mpb" data-act="nuevomerchy">+ Pedido Merchy</button></div></div>
+  <div class="kpis">
+    <div class="kpi"><div class="l">Ventas del mes</div><div class="v">${soles(R.venta)}</div><div class="s">${R.ps.filter(esMPDirecto).length} directos · ${R.ps.filter(p=>!esMPDirecto(p)).length} de Mundo 3D${delta(R.venta,P.venta)}</div></div>
+    <div class="kpi"><div class="l">Costo de fabricación</div><div class="v bad">${soles(R.costo)}</div><div class="s">${R.sp?`${R.sp} pedido${R.sp===1?"":"s"} sin costo de fabricación`:"lo que le costó a Merchy producir"}</div></div>
+    <div class="kpi"><div class="l">Ganancia bruta</div><div class="v ok">${soles(R.gan)}</div><div class="s">${mg==null?"sin ventas":`margen ${mg}%`}${delta(R.gan,P.gan)}</div></div>
+    <div class="kpi ${R.neta<0?"alert":""}"><div class="l">Ganancia neta</div><div class="v">${soles(R.neta)}</div><div class="s">tras ${soles(R.gas)} en gastos</div></div>
+    <a class="kpi link" href="#cobros"><div class="l">Por cobrar</div><div class="v">${soles(all.reduce((a,p)=>a+deuda(p),0))}</div><div class="s">${all.filter(p=>deuda(p)>0).length} pedidos con saldo · ${R.uds} uds este mes</div></a>
+    <div class="kpi ${venc.length?"alert":""}"><div class="l">En curso</div><div class="v">${act.length}</div><div class="s">${venc.length} vencidos · ${prox.length} vencen en 7 d</div></div>
+  </div>
+  ${visuales()}
+  ${all.length?"":`<div class="empty">Aún no hay pedidos de Merchy Prints. Crea uno con <b>+ Pedido Merchy</b> o marca la casilla “Merchy Prints” al crear un pedido.</div>`}
+  ${all.length?`<div class="cols">
+    <div class="panel"><h2>Últimos 6 meses</h2><div class="tbl"><table><thead><tr><th>Mes</th><th class="r">Ventas</th><th></th><th class="r">Ganancia</th><th class="r">Margen</th></tr></thead><tbody>
+      ${hist.map(h=>`<tr class="click ${h.mm===m?"sel":""}" data-mm="${h.mm}"><td>${esc(new Date(h.mm+"-01T00:00").toLocaleDateString("es-PE",{month:"short",year:"2-digit"}))}</td><td class="r">${soles(h.venta)}</td><td style="width:35%"><div class="track dual"><div class="fill mpf" style="width:${h.venta/hMax*100}%"></div></div><div class="track dual"><div class="fill okf" style="width:${Math.max(0,h.gan)/hMax*100}%"></div></div></td><td class="r okc">${soles(h.gan)}</td><td class="r muted">${h.venta?Math.round(h.gan/h.venta*100)+"%":"—"}</td></tr>`).join("")}
+    </tbody></table></div><div class="muted" style="font-size:12px">Barra morada: ventas. Barra verde: ganancia bruta.</div></div>
+    <div class="panel"><h2>Productos más rentables</h2>
+      <table><thead><tr><th>Producto</th><th class="r">Uds</th><th class="r">Ventas</th><th class="r">Ganancia</th></tr></thead><tbody>${topP.map(x=>`<tr><td>${esc(x.n)}</td><td class="r">${x.uds}</td><td class="r">${soles(x.venta)}</td><td class="r okc"><b>${soles(x.gan)}</b></td></tr>`).join("")}</tbody></table>
+    </div></div>
+  <div class="panel"><h2>Pedidos de ${esc(nombre)}</h2>${R.ps.length?`<div class="tbl"><table><thead><tr><th>#</th><th>Fecha</th><th>Comprador / producto</th><th class="r">Cant.</th><th class="r">Costo fab. u.</th><th class="r">Precio u.</th><th class="r">Venta Merchy</th><th class="r">Ganancia</th><th>Etapa</th></tr></thead><tbody>${R.ps.slice().sort((a,b)=>b.num-a.num).map(row).join("")}</tbody></table></div>`:`<div class="empty">Sin pedidos este mes.</div>`}</div>
+  ${act.length?`<div class="panel"><h2>En curso</h2><div class="tbl"><table><thead><tr><th>#</th><th>Fecha</th><th>Comprador / producto</th><th class="r">Cant.</th><th class="r">Costo fab. u.</th><th class="r">Precio u.</th><th class="r">Venta Merchy</th><th class="r">Ganancia</th><th>Etapa</th></tr></thead><tbody>${act.sort((a,b)=>(a.entrega||"9").localeCompare(b.entrega||"9")).map(row).join("")}</tbody></table></div></div>`:""}`:""}`;
+},
+gastos(){
+  const rows=S.gastos.slice().sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||""));
+  const mes=today().slice(0,7);
+  const tm=rows.filter(g=>(g.fecha||"").startsWith(mes)).reduce((a,g)=>a+(+g.monto||0),0);
+  return `<div class="top"><div><h1>Gastos</h1><div class="muted">Este mes: <b>${soles(tm)}</b> · <a href="#balance">ver balance</a></div></div><button class="btn primary" data-act="gasto">+ Registrar gasto</button></div>
+  ${rows.length?`<div class="panel"><div class="tbl"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Pagado con</th><th class="r">Monto</th><th></th></tr></thead><tbody>
+  ${rows.map(g=>`<tr><td>${esc(fdate(g.fecha))}</td><td>${esc(g.concepto)}</td><td class="muted">${esc(g.categoria)}</td><td class="muted">${esc(g.metodo||"")}</td><td class="r">${soles(g.monto)}</td><td><button class="btn sm" data-gasto="${esc(g.id)}">Editar</button></td></tr>`).join("")}
+  </tbody></table></div></div>`:`<div class="empty">Aún no hay gastos. Registra compras de material, envíos o herramientas para ver la utilidad del mes en el resumen.</div>`}`;
+},
+freelance(){
+  const rows=S.freelance.slice().sort((a,b)=>(a.entrega||"9").localeCompare(b.entrega||"9"));
+  const pend=rows.filter(r=>r.estado!=="Terminado").reduce((a,r)=>a+Math.max(0,(+r.precio||0)-(+r.adelanto||0)),0);
+  return `<div class="top"><div><h1>Freelance Nathan3D</h1><div class="muted">Saldo por cobrar: <b>${usd(pend)}</b></div></div><button class="btn primary" data-act="free">+ Nuevo encargo</button></div>
+  ${rows.length?`<div class="panel"><div class="tbl"><table><thead><tr><th>Cliente</th><th>Pedido</th><th>País</th><th>Canal</th><th>Estado</th><th>Entrega</th><th class="r">Precio</th><th class="r">Saldo</th></tr></thead><tbody>
+  ${rows.map(r=>`<tr class="click" data-free="${esc(r.id)}"><td>${esc(r.cliente)}</td><td>${esc(r.pedido)}</td><td>${esc(r.pais)}</td><td class="muted">${esc(r.fuente)}</td><td><span class="pill ${r.estado==="Terminado"?"COMPLETADO":r.estado==="En progreso"?"DISEÑO":"RECIBIDO"}">${esc(r.estado)}</span></td><td>${esc(fdate(r.entrega))}</td><td class="r">${usd(r.precio)}</td><td class="r">${usd(Math.max(0,(+r.precio||0)-(+r.adelanto||0)))}</td></tr>`).join("")}
+  </tbody></table></div></div>`:`<div class="empty">No hay encargos freelance. En Notion la tabla solo tenía una fila de prueba (“TASK DEL DIA”), así que no se importó.</div>`}`;
+}};
+
+/* ---------- formularios ---------- */
+const esMerchy=p=>p&&p.negocio==="merchy";const esM3D=p=>!esMerchy(p);
+const costoDe=p=>esMerchy(p)?(+p.costoTotal||((+p.cantidad||0)*(+p.costoUnit||0))):0; /* lo que Mundo 3D le paga a Merchy = venta de Merchy */
+const esMPDirecto=p=>esMerchy(p)&&p.mpVia==="directo";
+const ventaMP=p=>esMPDirecto(p)?(+p.total||0):costoDe(p);
+const lineaVenta=(p,l)=>esMPDirecto(p)?(+l.precioUnit||0):(+l.costoUnit||0);
+const costoProvDe=p=>esMerchy(p)?(p.costoProvTotal!=null?+p.costoProvTotal||0:itemsDe(p).reduce((a,l)=>a+(+l.cantidad||0)*(+l.costoProv||0),0)):0;
+const sinProv=p=>esMerchy(p)&&itemsDe(p).some(l=>+l.cantidad&&!(+l.costoProv));
+const mpTag=p=>(esMerchy(p)&&MODE==="m3d"?' <span class="pill mp">CON MERCHY</span>':"")+(p.n3d&&!p._virt&&MODE!=="n3d"?' <span class="pill n3">DISEÑO NATHAN3D</span>':"")+(p._virt==="n3d"?` <span class="pill n3">de ${esc(p.origen3)}</span>`:"");
+const normKey=n=>String(n||"").normalize("NFKD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+const median=a=>{a=a.slice().sort((x,y)=>x-y);return a.length?(a.length%2?a[(a.length-1)/2]:(a[a.length/2-1]+a[a.length/2])/2):0};
+function pedidosDe(c){const k=normKey(c.nombre);return S.pedidos.filter(p=>p.clienteId?p.clienteId===c.id:normKey(p.cliente)===k)}
+function statsCliente(c){
+  const ps=pedidosDe(c).sort((a,b)=>(a.creado||"").localeCompare(b.creado||""));
+  const tot=ps.filter(p=>+p.total>0).map(p=>+p.total);
+  const fechas=ps.map(p=>p.creado).filter(Boolean);
+  const gaps=[];for(let i=1;i<fechas.length;i++)gaps.push(days(fechas[i],fechas[i-1]));
+  return {ps,n:ps.length,total:tot.reduce((a,b)=>a+b,0),tipico:median(tot),deuda:ps.reduce((a,p)=>a+deuda(p),0),
+    primera:fechas[0]||"",ultima:fechas[fechas.length-1]||"",frecuencia:gaps.length?Math.round(gaps.reduce((a,b)=>a+b,0)/gaps.length):null};
+}
+function clienteDetalle(c){
+  const st=statsCliente(c);
+  const contacto=[["Teléfono",c.telefono],["Instagram",c.instagram&&"@"+c.instagram.replace(/^@/,"")],["Correo",c.email],["Distrito",c.distrito],["Dirección",c.direccion],["Canal",c.canal]].filter(x=>x[1]);
+  return `<div><button class="btn sm" data-act="volver">← Clientes</button></div>
+  <div class="top"><div><h1>${esc(c.nombre)}</h1><div class="muted">Cliente desde ${esc(fdate(st.primera||c.creado))}${st.n>1?" · recurrente":""}</div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-editcli="${esc(c.id)}">Editar datos</button><button class="btn primary" data-nuevopara="${esc(c.id)}">+ Pedido para ${esc(c.nombre.split(" ")[0])}</button></div></div>
+  <div class="kpis">
+    <div class="kpi"><div class="l">Total comprado</div><div class="v">${soles(st.total)}</div><div class="s">${st.n} pedido${st.n===1?"":"s"}</div></div>
+    <div class="kpi"><div class="l">Pedido típico</div><div class="v">${soles(st.tipico)}</div><div class="s">mediana</div></div>
+    <div class="kpi"><div class="l">Última compra</div><div class="v">${st.ultima?days(today(),st.ultima)+" d":"—"}</div><div class="s">${st.ultima?esc(fdate(st.ultima)):"sin pedidos"}</div></div>
+    <div class="kpi"><div class="l">Compra cada</div><div class="v">${st.frecuencia!=null?st.frecuencia+" d":"—"}</div><div class="s">${st.frecuencia!=null?"promedio entre pedidos":"necesita 2+ pedidos"}</div></div>
+    <div class="kpi ${st.deuda?"alert":""}"><div class="l">Debe</div><div class="v">${soles(st.deuda)}</div><div class="s">pedidos en curso</div></div>
+  </div>
+  <div class="cols wide">
+    <div class="panel"><h2>Historial de compras</h2>
+      ${st.n?`<div class="tbl"><table><thead><tr><th>#</th><th>Fecha</th><th>Pedido</th><th>Etapa</th><th class="r">Total</th><th class="r">Saldo</th></tr></thead><tbody>
+      ${st.ps.slice().reverse().map(p=>`<tr class="click" data-edit="${esc(p.id)}"><td>${p.num}</td><td>${esc(fdate(p.creado))}</td><td>${esc(p.pedido||"(sin descripción)")}${mpTag(p)}</td><td>${pill(p.status)}</td><td class="r">${p.total?soles(p.total):"—"}</td><td class="r">${deuda(p)?`<b>${soles(deuda(p))}</b>`:"—"}</td></tr>`).join("")}
+      </tbody></table></div>`:`<div class="empty">Este cliente aún no tiene pedidos.</div>`}
+    </div>
+    <div class="panel"><h2>Contacto</h2>
+      ${contacto.length?`<dl class="kv">${contacto.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`:`<div class="muted">Sin datos de contacto. Usa “Editar datos” para agregar teléfono o Instagram.</div>`}
+      ${c.notas?`<h2>Notas</h2><div style="white-space:pre-wrap">${esc(c.notas)}</div>`:""}
+    </div>
+  </div>`;
+}
+function abrirCliente(v){
+  const c=S.clientes.find(x=>x.id===v)||S.clientes.find(x=>normKey(x.nombre)===normKey(v));
+  if(c){views._cli=c.id;if(location.hash!=="#clientes")location.hash="clientes";else render();window.scrollTo(0,0)}
+  else{views._pf={q:v,st:"todos"};location.hash="pedidos";render()}
+}
+function nuevoIdCliente(nombre){let base="c_"+(normKey(nombre).slice(0,40)||"cliente"),id=base,i=2;while(S.clientes.some(c=>c.id===id))id=base+"_"+i++;return id}
+async function migrarClientes(btn){
+  btn.disabled=true;
+  const grupos={};S.pedidos.filter(p=>!p.clienteId).sort((a,b)=>(a.creado||"").localeCompare(b.creado||"")).forEach(p=>{const k=normKey(p.cliente)||"sinnombre";(grupos[k]=grupos[k]||[]).push(p)});
+  const tareas=[];
+  for(const [k,ps] of Object.entries(grupos)){
+    let c=S.clientes.find(x=>normKey(x.nombre)===k);
+    let id=c&&c.id;
+    if(!c){const n=(ps[0].cliente||"").trim()||"(sin nombre)";id=nuevoIdCliente(n);const dig=n.replace(/\D/g,"");
+      const data={nombre:n,telefono:dig.length>=9&&dig.length===n.replace(/[\s+]/g,"").length?dig:"",instagram:"",email:"",distrito:"",direccion:"",notas:"",canal:(ps.filter(p=>p.fuente).pop()||{}).fuente||"",creado:ps[0].creado||today()};
+      S.clientes.push({id,...data});tareas.push(()=>db.collection("clientes").doc(id).set(data))}
+    ps.forEach(p=>tareas.push(()=>db.collection("pedidos").doc(p.id).update({clienteId:id})));
+  }
+  let hechas=0;
+  for(let i=0;i<tareas.length;i+=8){await Promise.all(tareas.slice(i,i+8).map(f=>f()));hechas=Math.min(tareas.length,i+8);btn.textContent=`Vinculando… ${Math.round(hechas/tareas.length*100)}%`}
+  toast(`Listo: ${Object.keys(grupos).length} clientes vinculados`);
+}
+function clienteForm(c,onCreated){
+  const nuevo=!c;c=c||{canal:"WHATSAPP"};
+  openForm(nuevo?"Nuevo cliente":c.nombre,
+   field("Nombre o usuario","nombre",c.nombre,"text","required autofocus")+field("Teléfono / WhatsApp","telefono",c.telefono,"tel",'inputmode="tel"')+
+   field("Instagram","instagram",c.instagram,"text",'placeholder="usuario, sin @"')+field("Correo","email",c.email,"email")+
+   field("Distrito / ciudad","distrito",c.distrito)+sel("Canal","canal",FUENTES,c.canal)+
+   `<label class="full">Dirección de envío<input id="f-direccion" name="direccion" value="${esc(c.direccion)}"></label>`+
+   `<label class="full">Notas<textarea id="f-notas" name="notas" rows="2">${esc(c.notas)}</textarea></label>`,
+   async d=>{
+     d.nombre=d.nombre.trim();d.telefono=(d.telefono||"").replace(/[^\d+]/g,"");d.instagram=(d.instagram||"").trim().replace(/^@/,"");
+     const dup=S.clientes.find(x=>x.id!==c.id&&(normKey(x.nombre)===normKey(d.nombre)||(d.telefono&&x.telefono&&x.telefono.slice(-9)===d.telefono.slice(-9))));
+     if(dup){const e=new Error(`ya existe ${dup.nombre}`);throw e}
+     if(nuevo){const id=nuevoIdCliente(d.nombre);await db.collection("clientes").doc(id).set({...d,creado:today(),negocio:NEG()});toast("Cliente registrado");onCreated&&onCreated(id)}
+     else{await db.collection("clientes").doc(c.id).update(d);
+       const ps=pedidosDe(c).filter(p=>p.cliente!==d.nombre);await Promise.all(ps.map(p=>db.collection("pedidos").doc(p.id).update({cliente:d.nombre})));toast("Cliente guardado")}
+   });
+}
+
+function field(lbl,name,val,type="text",extra=""){return `<label>${lbl}<input id="f-${name}" name="${name}" type="${type}" value="${esc(val??"")}" ${extra}></label>`}
+function sel(lbl,name,opts,val){return `<label>${lbl}<select id="f-${name}" name="${name}">${opts.map(o=>`<option ${o===val?"selected":""}>${esc(o)}</option>`).join("")}</select></label>`}
+function openForm(title,body,onSave,onDelete,opts={}){
+  const f=$("#dlgForm");
+  f.innerHTML=`<h2>${esc(title)}</h2><div class="fgrid">${body}</div><div class="actions"><div>${onDelete?'<button type="button" class="btn" id="dDel">Eliminar</button>':""}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="dCancel">Cancelar</button>${opts.again?'<button type="submit" class="btn" name="again" value="1">Guardar y otro</button>':""}<button type="submit" class="btn primary">Guardar</button></div></div>`;
+  const dlg=$("#dlg");if(!dlg.open)dlg.showModal();
+  $("#dCancel").onclick=()=>dlg.close();
+  if(onDelete){let armed=false;$("#dDel").onclick=async e=>{if(!armed){armed=true;e.target.textContent="Confirmar eliminación";return}await onDelete();dlg.close()}}
+  f.onsubmit=async e=>{e.preventDefault();const again=e.submitter&&e.submitter.name==="again";const d=Object.fromEntries(new FormData(f));f.querySelectorAll("input[type=checkbox]").forEach(c=>d[c.name]=c.checked);
+    f.querySelectorAll("button[type=submit]").forEach(b=>b.disabled=true);
+    try{await onSave(d);if(again&&opts.again)opts.again();else dlg.close()}catch(err){toast("No se pudo guardar: "+(err.message||err.code||"error"));f.querySelectorAll("button[type=submit]").forEach(b=>b.disabled=false)}};
+  opts.wire&&opts.wire(f);
+}
+const N=v=>v===""||v==null?0:+v;
+function mpItems(p){
+  if(p&&Array.isArray(p.items)&&p.items.length)return p.items;
+  if(p&&(p.cantidad||p.producto))return [{modelo:p.producto||"",cantidad:p.cantidad||"",costoProv:p.costoProv||"",costoUnit:p.costoUnit||"",precioUnit:p.precioUnit||""}];
+  return [{}];
+}
+function mpLine(it){it=it||{};const v=x=>x===0||x?esc(x):"";
+  return `<div class="mpl"><input class="l-mod" aria-label="Producto o modelo" placeholder="Ej. Llavero varón" value="${v(it.modelo)}"><input class="l-q" aria-label="Cantidad" type="number" min="0" step="1" inputmode="numeric" placeholder="Cant." value="${v(it.cantidad)}"><input class="l-k" aria-label="Costo de fabricación de Merchy por unidad" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Costo fab." value="${v(it.costoProv)}"><input class="l-c" aria-label="Precio de Merchy a Mundo 3D por unidad" type="number" min="0" step="0.01" inputmode="decimal" placeholder="A M3D" value="${v(it.costoUnit)}"><input class="l-p" aria-label="Precio de Mundo 3D al cliente por unidad" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Al cliente" value="${v(it.precioUnit)}"><button type="button" class="btn sm l-del" aria-label="Quitar línea" title="Quitar">×</button><div class="l-sub"></div></div>`}
+function leerLineas(root){return [...root.querySelectorAll(".mpl")].map(r=>({modelo:r.querySelector(".l-mod").value.trim(),cantidad:N(r.querySelector(".l-q").value),costoProv:N(r.querySelector(".l-k").value),costoUnit:N(r.querySelector(".l-c").value),precioUnit:N(r.querySelector(".l-p").value)})).filter(l=>l.modelo||l.cantidad)}
+const itemsDe=p=>esMerchy(p)?mpItems(p).filter(l=>l.modelo||+l.cantidad):[];
+function pedidoForm(p,clientePre,merchyPre){
+  if(p&&p._src)p=p._src;const nuevo=!p;const direct=p?esMPDirecto(p):!!merchyPre;const n3dDirect=p?p.negocio==="n3d":(MODE==="n3d"&&!merchyPre);
+  const addDays=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+  p=p||{status:"RECIBIDO",entrega:addDays(7)};
+  const pre=clientePre?S.clientes.find(c=>c.id===clientePre):(p.clienteId?S.clientes.find(c=>c.id===p.clienteId):null);
+  const label=c=>c.nombre+(c.telefono?" · "+c.telefono:"")+(c.instagram?" · @"+c.instagram:"");
+  openForm(nuevo?"Nuevo pedido":`Pedido #${p.num}`,
+   `<div class="full cliblock"><span class="flabel">Cliente</span><input type="hidden" id="f-cid" name="cid" value="${esc(pre?pre.id:"")}">
+     <div id="cli-pick" class="combo"><input id="f-cliq" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="cli-dd" aria-autocomplete="list" placeholder="Busca por nombre, teléfono o Instagram…" value="${esc(pre?"":(p.cliente||""))}"><ul id="cli-dd" class="dd" role="listbox" hidden></ul></div>
+     <div id="cli-sel" class="cliinfo ok selcard" hidden></div>
+     <div id="cli-new" class="newcard" hidden><div class="newhead"><b>Cliente nuevo</b><button type="button" class="btn sm" id="cli-back">Buscar existente</button></div>
+       <div class="fgrid">${field("Nombre o usuario","nnom","","text")}${field("Teléfono / WhatsApp","ntel","","tel",'inputmode="tel"')}${field("Instagram","nig","","text",'placeholder="usuario, sin @"')}</div><div id="cli-dup" class="muted" style="font-size:12px"></div></div></div>`+
+   `<label class="mptoggle full" ${direct||n3dDirect?"hidden":""}><input type="checkbox" id="f-merchy" name="merchy" ${(p.negocio==="merchy"||direct)?"checked":""}><span class="sw2"></span><span><b>Usar Merchy Prints</b> <span class="muted">· Mundo 3D le compra el producto a Merchy</span></span></label>
+   <div id="mpbox" class="full mpbox" hidden><div class="fgrid">
+     <div class="full"><div class="mplh"><span>Producto / modelo</span><span>Cant.</span><span title="Lo que le cuesta a Merchy fabricarlo">Costo fabricación u.</span><span class="h-c" title="Lo que Mundo 3D le paga a Merchy">Merchy → M3D u.</span><span title="Lo que paga el cliente">${direct?"Precio al cliente u.":"M3D → cliente u."}</span><span></span></div>
+     <div id="mplines">${mpItems(p).map(mpLine).join("")}</div>
+     <div style="margin-top:8px"><button type="button" class="btn sm" id="mpadd">+ Agregar modelo u otro producto</button></div></div>
+     <div id="mpcalc" class="mpcalc full"></div></div></div>`+
+   `<label class="mptoggle n3toggle full" ${n3dDirect?"hidden":""}><input type="checkbox" id="f-n3d" name="n3d" ${p.n3d?"checked":""}><span class="sw2"></span><span><b>Diseño con Nathan3D</b> <span class="muted">· encargar el diseño de la figura</span></span></label>
+   <div id="n3box" class="full n3box" hidden><div class="fgrid">${field("Pago al diseñador (S/)","n3dPago",p.n3dPago||"","number",'min="0" step="0.01" inputmode="decimal"')}${field("Entrega del diseño","n3dEntrega",p.n3dEntrega||"","date")}
+     <label class="full">Indicaciones para el diseño<textarea id="f-n3dNota" name="n3dNota" rows="2" placeholder="Ej. figura de 20 cm desde foto, pose sentada">${esc(p.n3dNota||"")}</textarea></label><div id="n3calc" class="full" style="font-size:13px"></div></div></div>`+
+   `<label class="full">Qué pide<input id="f-pedido" name="pedido" required value="${esc(p.pedido)}" placeholder="Ej. Perrito navideño 20 cm pintado"></label>`+
+   sel("Canal","fuente",FUENTES,p.fuente||(pre&&pre.canal)||"WHATSAPP")+sel("Etapa","status",STAGES,p.status)+
+   field("Monto total (S/)","total",p.total||"","number",'step="0.01" min="0" inputmode="decimal"')+
+   `<label>Adelanto (S/)<span style="display:flex;gap:6px"><input id="f-adelanto" name="adelanto" type="number" step="0.01" min="0" inputmode="decimal" value="${esc(p.adelanto||"")}" style="flex:1"><button type="button" class="btn sm" id="half">50%</button><button type="button" class="btn sm" id="full">100%</button></span></label>`+
+   `<label>Entrega<input id="f-entrega" name="entrega" type="date" value="${esc(p.entrega)}"><span class="quick">${[3,7,14].map(n=>`<button type="button" class="btn sm" data-plus="${n}">+${n} d</button>`).join("")}</span></label>`+
+   `<div class="saldo" id="saldoBox"></div>`+
+   `<details class="full" ${nuevo?"":"open"}><summary>Más datos (segundo pago, fechas, envío, notas)</summary><div class="fgrid" style="margin-top:10px">`+
+   field("Segundo pago (S/)","segundo",p.segundo||"","number",'step="0.01" min="0"')+field("Fecha del adelanto","fechaAdelanto",p.fechaAdelanto||(nuevo?today():""),"date")+
+   field("Fecha del saldo","fechaSaldo",p.fechaSaldo,"date")+`<span></span>`+
+   `<label class="chk"><input type="checkbox" id="f-diseno" name="diseno" ${p.diseno?"checked":""}> Requiere diseño</label><label class="chk"><input type="checkbox" id="f-shalom" name="shalom" ${p.shalom?"checked":""}> Envío por Shalom</label>`+
+   `<label class="full">Notas<textarea id="f-nota" name="nota" rows="2">${esc(p.nota)}</textarea></label></div></details>`+
+   (p.notion?`<div class="full"><a href="${esc(p.notion)}" target="_blank" rel="noopener">Ver original en Notion ↗</a></div>`:""),
+   async (d,again)=>{
+     if(!d.cid)throw new Error("elige un cliente o crea uno nuevo");
+     if(d.cid==="__new__"&&!(d.nnom||"").trim()&&!(d.ntel||"").trim())throw new Error("escribe el nombre o teléfono del cliente nuevo");
+     let cid,cname;const c=d.cid&&d.cid!=="__new__"?S.clientes.find(x=>x.id===d.cid):null;
+     if(c){cid=c.id;cname=c.nombre}
+     else{const tel=(d.ntel||"").replace(/[^\d+]/g,"");cname=(d.nnom||"").trim()||tel;cid=nuevoIdCliente(cname);
+       const cdata={nombre:cname,telefono:tel,instagram:(d.nig||"").trim().replace(/^@/,""),email:"",distrito:"",direccion:"",notas:"",canal:d.fuente,creado:today(),negocio:direct?"merchy":n3dDirect?"n3d":"m3d"};
+       await db.collection("clientes").doc(cid).set(cdata);S.clientes.push({id:cid,...cdata})}
+     const mp=!!d.merchy;
+     let mpData={negocio:n3dDirect?"n3d":"m3d"};
+     if(mp){const L=leerLineas(document.querySelector("#mplines"));if(!L.some(l=>l.cantidad>0))throw new Error("agrega al menos un modelo con su cantidad");
+       const q=L.reduce((a,l)=>a+l.cantidad,0),ct=L.reduce((a,l)=>a+l.cantidad*l.costoUnit,0),vt=L.reduce((a,l)=>a+l.cantidad*l.precioUnit,0);
+       const nombres=[...new Set(L.map(l=>l.modelo).filter(Boolean))];
+       mpData={negocio:"merchy",items:L,producto:nombres.join(" + "),mpVia:direct?"directo":"m3d",cantidad:q,costoUnit:direct?0:(q?+(ct/q).toFixed(4):0),precioUnit:q?+(vt/q).toFixed(4):0,costoTotal:direct?0:ct,costoProvTotal:L.reduce((a,l)=>a+l.cantidad*l.costoProv,0)}}
+     const data={...mpData,pedido:d.pedido.trim(),fuente:d.fuente,status:d.status,total:N(d.total),adelanto:N(d.adelanto),segundo:N(d.segundo),entrega:d.entrega,
+       fechaAdelanto:d.fechaAdelanto||"",fechaSaldo:d.fechaSaldo||"",diseno:!!d.diseno,shalom:!!d.shalom,nota:d.nota||"",cliente:cname,clienteId:cid};
+     const n3Data=(!n3dDirect&&d.n3d)?{n3d:true,n3dPago:N(d.n3dPago),n3dPor:direct?"merchy":"m3d",n3dEntrega:d.n3dEntrega||"",n3dNota:d.n3dNota||"",diseno:true}:{n3d:false};
+     if(n3Data.n3d&&!(n3Data.n3dPago>0))throw new Error("pon cuánto le pagarás al diseñador");
+     Object.assign(data,n3Data);
+     if(nuevo){const num=Math.max(0,...RAW.pedidos.map(x=>x.num))+1;const id="p"+String(num).padStart(4,"0");
+       await db.collection("pedidos").doc(id).set({...data,num,creado:today(),origen:"erp"});
+       S.pedidos.push({id,...data,num,creado:today()});toast(`Pedido #${num} creado para ${cname}`)}
+     else{await db.collection("pedidos").doc(p.id).update(data);toast("Pedido guardado")}
+   }, nuevo?null:async()=>{await db.collection("pedidos").doc(p.id).delete();toast("Pedido eliminado")},
+   {again:nuevo?()=>pedidoForm(null,null,direct):null, wire:f=>{
+     const tot=f.querySelector("#f-total"),ad=f.querySelector("#f-adelanto"),seg=f.querySelector("#f-segundo"),box=f.querySelector("#saldoBox"),fu=f.querySelector("#f-fuente");
+     const cid=f.querySelector("#f-cid"),q=f.querySelector("#f-cliq"),dd=f.querySelector("#cli-dd"),pick=f.querySelector("#cli-pick"),selc=f.querySelector("#cli-sel"),nw=f.querySelector("#cli-new"),nn=f.querySelector("#f-nnom"),nt=f.querySelector("#f-ntel"),dup=f.querySelector("#cli-dup");
+     let items=[],act=0;
+     const lastBuy=c=>{let u="";S.pedidos.forEach(p=>{if((p.clienteId===c.id)&&(p.creado||"")>u)u=p.creado});return u};
+     const showDD=()=>{
+       const v=q.value.trim(),k=normKey(v),dg=v.replace(/\D/g,"");
+       let list;
+       if(!v)list=S.clientes.map(c=>({c,u:lastBuy(c)})).sort((a,b)=>b.u.localeCompare(a.u)).slice(0,8).map(x=>x.c);
+       else list=S.clientes.map(c=>{const n=normKey(c.nombre),ig=normKey(c.instagram);let s=0;
+           if(n.startsWith(k))s=3;else if(n.includes(k))s=2;else if(ig&&ig.includes(k))s=2;else if(dg.length>=3&&c.telefono&&c.telefono.includes(dg))s=2;return{c,s}})
+         .filter(x=>x.s).sort((a,b)=>b.s-a.s||a.c.nombre.localeCompare(b.c.nombre)).slice(0,8).map(x=>x.c);
+       items=list.map(c=>({c}));items.push({nuevo:true,v});act=0;
+       dd.innerHTML=(v?"":`<li class="ddh">Clientes recientes</li>`)+items.map((it,i)=>{
+         if(it.nuevo)return `<li role="option" id="dd${i}" data-i="${i}" class="ddnew">+ Crear cliente nuevo${it.v?`: <b>${esc(it.v)}</b>`:""}</li>`;
+         const st=statsCliente(it.c);
+         return `<li role="option" id="dd${i}" data-i="${i}"><div><b>${esc(it.c.nombre)}</b><div class="muted">${esc([it.c.telefono,it.c.instagram&&"@"+it.c.instagram].filter(Boolean).join(" · ")||it.c.canal||"")}</div></div><div class="muted r">${st.n} ped. · ${soles(st.total)}${st.deuda?`<br><span class="late">debe ${soles(st.deuda)}</span>`:""}</div></li>`}).join("");
+       if(!list.length&&v)dd.insertAdjacentHTML("afterbegin",`<li class="ddh">Ningún cliente coincide con “${esc(v)}”</li>`);
+       dd.hidden=false;q.setAttribute("aria-expanded","true");hl()};
+     const hl=()=>{dd.querySelectorAll("[data-i]").forEach(li=>li.classList.toggle("on",+li.dataset.i===act));const a=dd.querySelector(`[data-i="${act}"]`);if(a){a.scrollIntoView({block:"nearest"});q.setAttribute("aria-activedescendant",a.id)}};
+     const hide=()=>{dd.hidden=true;q.setAttribute("aria-expanded","false")};
+     const choose=it=>{hide();if(it.nuevo)modoNuevo(it.v);else modoSel(it.c)};
+     const modoSel=c=>{cid.value=c.id;pick.hidden=true;nw.hidden=true;selc.hidden=false;const st=statsCliente(c);
+       selc.innerHTML=`<div class="selrow"><div><b>${esc(c.nombre)}</b> <span class="muted">${esc([c.telefono,c.instagram&&"@"+c.instagram].filter(Boolean).join(" · "))}</span><div style="font-size:12px">${st.n} pedido${st.n===1?"":"s"} · ${soles(st.total)} comprado${st.ultima?` · último hace ${days(today(),st.ultima)} d`:""}${st.deuda?` · <span class="late">debe ${soles(st.deuda)}</span>`:""}</div></div><button type="button" class="btn sm" id="cli-chg">Cambiar</button></div>`;
+       selc.querySelector("#cli-chg").onclick=()=>{cid.value="";selc.hidden=true;pick.hidden=false;q.value="";q.focus();showDD()};
+       if(nuevo&&c.canal)fu.value=c.canal;
+       setTimeout(()=>f.querySelector("#f-pedido").focus(),0)};
+     const modoNuevo=v=>{cid.value="__new__";pick.hidden=true;selc.hidden=true;nw.hidden=false;
+       const dg=v.replace(/\D/g,"");if(dg.length>=9&&dg.length===v.replace(/[\s+]/g,"").length){nt.value=dg;nn.value=""}else{nn.value=v}
+       chkDup();setTimeout(()=>(nn.value?nt:nn).focus(),0)};
+     const chkDup=()=>{const k=normKey(nn.value),dg=nt.value.replace(/\D/g,"");const c=S.clientes.find(c=>(k&&normKey(c.nombre)===k)||(dg.length>=9&&c.telefono&&c.telefono.slice(-9)===dg.slice(-9)));
+       dup.innerHTML=c?`Ya existe <b>${esc(c.nombre)}</b>. <button type="button" class="btn sm" id="usedup">Usar ese cliente</button>`:"Se creará su ficha al guardar.";
+       if(c)dup.querySelector("#usedup").onclick=()=>modoSel(c)};
+     nn.addEventListener("input",chkDup);nt.addEventListener("input",chkDup);
+     f.querySelector("#cli-back").onclick=()=>{cid.value="";nw.hidden=true;pick.hidden=false;q.value=nn.value;q.focus();showDD()};
+     q.addEventListener("input",showDD);q.addEventListener("focus",showDD);q.addEventListener("blur",()=>setTimeout(hide,150));
+     q.addEventListener("keydown",e=>{if(dd.hidden&&e.key==="ArrowDown"){showDD();e.preventDefault();return}
+       if(e.key==="ArrowDown"){act=Math.min(items.length-1,act+1);hl();e.preventDefault()}
+       else if(e.key==="ArrowUp"){act=Math.max(0,act-1);hl();e.preventDefault()}
+       else if(e.key==="Enter"){e.preventDefault();if(!dd.hidden&&items[act])choose(items[act])}
+       else if(e.key==="Escape"&&!dd.hidden){hide();e.preventDefault();e.stopPropagation()}});
+     dd.addEventListener("mousedown",e=>{const li=e.target.closest("[data-i]");if(li){e.preventDefault();choose(items[+li.dataset.i])}});
+     if(pre)modoSel(pre);else if(!nuevo&&p.cliente){const c=matchCliente(p.cliente);if(c)modoSel(c)}
+     const mpc=f.querySelector("#f-merchy"),mpb=f.querySelector("#mpbox"),lines=f.querySelector("#mplines"),mcalc=f.querySelector("#mpcalc"),ped=f.querySelector("#f-pedido");
+     const mpUpd=(fromUnit)=>{mpb.hidden=!mpc.checked;f.querySelector("h2").textContent=n3dDirect?(nuevo?"Nuevo pedido Nathan3D":`Pedido Nathan3D #${p.num}`):direct?(nuevo?"Nuevo pedido Merchy Prints":`Pedido Merchy #${p.num}`):(mpc.checked?(nuevo?"Pedido Mundo 3D con Merchy Prints":`Pedido #${p.num} · con Merchy`):(nuevo?"Nuevo pedido":`Pedido #${p.num}`));f.classList.toggle("ismp",mpc.checked);f.classList.toggle("mpdirect",direct);
+       if(!mpc.checked){sal();return}
+       lines.querySelectorAll(".mpl").forEach(r=>{const q=N(r.querySelector(".l-q").value),k=N(r.querySelector(".l-k").value),c=N(r.querySelector(".l-c").value),v=N(r.querySelector(".l-p").value);
+         r.querySelector(".l-sub").innerHTML=direct?(q&&v?`<span style="color:var(--mp)">Merchy vende ${soles(q*v)}</span>${k?` · cuesta ${soles(q*k)} · <span class="${q*(v-k)<0?"late":"okc"}">gana ${soles(q*(v-k))}</span>`:""}`:""):q&&(c||v)?`<span style="color:var(--mp)">Merchy vende ${soles(q*c)}${k?` · gana ${soles(q*(c-k))}`:""}</span> · Mundo 3D vende ${soles(q*v)} · <span class="${q*(v-c)<0?"late":"okc"}">gana ${soles(q*(v-c))}</span>`:""});
+       const L=leerLineas(lines),q=L.reduce((a,l)=>a+l.cantidad,0),costo=L.reduce((a,l)=>a+l.cantidad*l.costoUnit,0),vl=L.reduce((a,l)=>a+l.cantidad*l.precioUnit,0);
+       if(fromUnit&&vl)tot.value=vl.toFixed(2);
+       const venta=N(tot.value),g=venta-costo,kp=L.reduce((a,l)=>a+l.cantidad*l.costoProv,0),gm=costo-kp;
+       if(direct){const gd=venta-kp;mcalc.innerHTML=q?`<div><b>${q}</b> unidades en ${L.length} línea${L.length===1?"":"s"}</div><div style="color:var(--mp)"><b>Merchy Prints</b> vende al cliente <b>${soles(venta)}</b>${kp?` · fabricarlo cuesta ${soles(kp)}`:""}</div><div class="${gd<0?"late":"okc"}">Ganancia: <b>${soles(gd)}</b>${venta?` (${Math.round(gd/venta*100)}%)`:""}${kp?"":` · <span class="muted">pon el costo de fabricación para verla real</span>`}</div>`:`<span class="muted">Agrega cada modelo con su cantidad, costo de fabricación y precio al cliente. Ej.: 70 llaveros varón + 30 llaveros mujer.</span>`;sal();return}
+       mcalc.innerHTML=q?`<div><b>${q}</b> unidades en ${L.length} línea${L.length===1?"":"s"}</div><div style="color:var(--mp)"><b>Merchy Prints</b> vende a Mundo 3D <b>${soles(costo)}</b>${kp?` · le costó ${soles(kp)} · gana <b>${soles(gm)}</b>`:` · <span class="muted">pon el costo de fabricación para ver su ganancia</span>`}</div><div class="${g<0?"late":"okc"}"><b>Mundo 3D</b> vende al cliente <b>${soles(venta)}</b> · gana <b>${soles(g)}</b>${venta?` (${Math.round(g/venta*100)}%)`:""}</div>`:`<span class="muted">Agrega cada modelo con su cantidad, costo de fabricación de Merchy, precio de Merchy a Mundo 3D y precio al cliente. Ej.: 70 llaveros varón + 30 llaveros mujer.</span>`;sal()};
+     const autoPed=()=>{if(ped.dataset.touched)return;ped.value=leerLineas(lines).map(l=>(l.cantidad?l.cantidad+" ":"")+l.modelo).join(" + ")};
+     mpc.addEventListener("change",()=>{mpUpd(true);if(mpc.checked)setTimeout(()=>lines.querySelector(".l-mod").focus(),0)});
+     lines.addEventListener("input",()=>{mpUpd(true);autoPed()});
+     lines.addEventListener("click",e=>{const b=e.target.closest(".l-del");if(!b)return;const r=b.closest(".mpl");if(lines.children.length>1)r.remove();else r.querySelectorAll("input").forEach(i=>i.value="");mpUpd(true);autoPed()});
+     lines.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.closest(".mpl")){e.preventDefault();f.querySelector("#mpadd").click()}});
+     f.querySelector("#mpadd").onclick=()=>{const last=lines.lastElementChild;const k=last?last.querySelector(".l-k").value:"",c=last?last.querySelector(".l-c").value:"",v=last?last.querySelector(".l-p").value:"";
+       lines.insertAdjacentHTML("beforeend",mpLine({costoProv:k,costoUnit:c,precioUnit:v}));lines.lastElementChild.querySelector(".l-mod").focus();mpUpd(true)};
+     tot.addEventListener("input",()=>mpUpd(false));
+     ped.addEventListener("input",()=>ped.dataset.touched=1);
+     const n3c=f.querySelector("#f-n3d"),n3b=f.querySelector("#n3box"),n3p=f.querySelector("#f-n3dPago"),n3calc=f.querySelector("#n3calc");
+     const n3Upd=()=>{n3b.hidden=!n3c.checked||n3dDirect;f.classList.toggle("isn3",n3c.checked&&!n3dDirect);if(n3b.hidden)return;const pago=N(n3p.value),quien=direct?"Merchy Prints":"Mundo 3D";
+       n3calc.innerHTML=pago?`<span style="color:var(--n3)"><b>${quien}</b> le paga <b>${soles(pago)}</b> a <b>Nathan3D</b> por el diseño.</span> <span class="muted">Se registra como gasto de ${quien} y como venta de Nathan3D.</span>`:`<span class="muted">Pon cuánto le pagarás al diseñador.</span>`};
+     n3c.addEventListener("change",()=>{n3Upd();if(n3c.checked)setTimeout(()=>n3p.focus(),0)});n3p.addEventListener("input",n3Upd);setTimeout(n3Upd,0);
+     if(n3dDirect)f.querySelector("#f-pedido").placeholder="Ej. Diseño de figura 3D desde foto";
+     const sal=()=>{const s=Math.max(0,N(tot.value)-N(ad.value)-N(seg.value));box.innerHTML=N(tot.value)?`Saldo por cobrar: <b>${soles(s)}</b>`:""};
+     [tot,ad,seg].forEach(x=>x.addEventListener("input",sal));
+     f.querySelector("#half").onclick=()=>{ad.value=(N(tot.value)/2).toFixed(2);sal()};
+     f.querySelector("#full").onclick=()=>{ad.value=N(tot.value).toFixed(2);sal()};
+     f.querySelectorAll("[data-plus]").forEach(b=>b.onclick=()=>{f.querySelector("#f-entrega").value=addDays(+b.dataset.plus)});
+     sal();mpUpd(false);if(p.pedido)ped.dataset.touched=1;
+     if(nuevo&&!pre)setTimeout(()=>q.focus(),30);
+   }});
+}
+function matchCliente(q){
+  if(!q)return null;
+  const name=q.split(" · ")[0].trim(),k=normKey(name),dig=q.replace(/\D/g,"");
+  return S.clientes.find(c=>normKey(c.nombre)===k)||(dig.length>=9?S.clientes.find(c=>c.telefono&&c.telefono.slice(-9)===dig.slice(-9)):null)||S.clientes.find(c=>c.instagram&&normKey(c.instagram)===normKey(q.replace(/^@/,"")))||null;
+}
+const METODOS=["Yape","Plin","Transferencia","Efectivo","Tarjeta","Otro"];
+const CATS_GASTO=["Filamento","Resina","Pintura y acabado","Envíos / Shalom","Empaque","Herramientas y repuestos","Publicidad","Servicios (luz, internet)","Alquiler","Sueldos y ayudantes","Otros"];
+function pagoForm(p){
+  const pend=S.pedidos.filter(x=>deuda(x)>0).sort((a,b)=>(a.entrega||"9").localeCompare(b.entrega||"9"));
+  if(!p&&!pend.length){toast("No hay pedidos con saldo pendiente");return}
+  const opt=x=>`#${x.num} · ${x.cliente} · ${x.pedido||""} · debe ${soles(deuda(x))}`;
+  openForm("Cobrar saldo",
+   (p?`<div class="full cliinfo ok"><div><b>#${p.num} ${esc(p.cliente)}</b> · ${esc(p.pedido)}<br>Total ${soles(p.total)} · pagado ${soles((+p.adelanto||0)+(+p.segundo||0))} · <b>debe ${soles(deuda(p))}</b></div></div>`
+      :`<label class="full">Pedido<select id="f-pid" name="pid">${pend.map(x=>`<option value="${esc(x.id)}">${esc(opt(x))}</option>`).join("")}</select></label><div id="pinfo" class="full cliinfo ok"></div>`)+
+   `<label>Monto recibido (S/)<input id="f-monto" name="monto" type="number" step="0.01" min="0.01" inputmode="decimal" required value="${p?deuda(p).toFixed(2):""}"></label>`+
+   sel("Medio de pago","metodo",METODOS,"Yape")+field("Fecha","fecha",today(),"date")+
+   `<label class="chk"><input type="checkbox" id="f-cerrar" name="cerrar" checked> Entregado: marcar COMPLETADO</label>`+
+   `<div class="full muted" id="restante" style="font-size:13px"></div>`,
+   async d=>{const q=p||S.pedidos.find(x=>x.id===d.pid);const m=N(d.monto);if(!(m>0))throw new Error("ingresa un monto");
+     const pagos=(Array.isArray(q.pagos)?q.pagos:[]).concat([{monto:m,fecha:d.fecha,metodo:d.metodo}]);
+     const up=q._virt?{[q._virt+"Cobrado"]:(+q.segundo||0)+m,[q._virt+"FechaCobro"]:d.fecha,[q._virt+"Pagos"]:pagos}:{segundo:(+q.segundo||0)+m,fechaSaldo:d.fecha,metodoSaldo:d.metodo,pagos};
+     if(d.cerrar)up[q._virt?q._virt+"Status":"status"]="COMPLETADO";
+     await db.collection("pedidos").doc(q.id).update(up);
+     toast(`Cobro de ${soles(m)} registrado · #${q.num}${d.cerrar?" completado":""}`)},
+   null,{wire:f=>{
+     const ps=f.querySelector("#f-pid"),mo=f.querySelector("#f-monto"),rest=f.querySelector("#restante"),cer=f.querySelector("#f-cerrar"),info=f.querySelector("#pinfo");
+     const curP=()=>p||S.pedidos.find(x=>x.id===ps.value);
+     const upd=(fill)=>{const q=curP();if(!q)return;if(fill)mo.value=deuda(q).toFixed(2);
+       if(info)info.innerHTML=`<div><b>#${q.num} ${esc(q.cliente)}</b> · ${esc(q.pedido)} · etapa ${esc(q.status)}<br>Total ${soles(q.total)} · pagado ${soles((+q.adelanto||0)+(+q.segundo||0))} · <b>debe ${soles(deuda(q))}</b></div>`;
+       const r=deuda(q)-N(mo.value);rest.textContent=r>0.005?`Quedará un saldo de ${soles(r)}.`:"Con este pago queda saldado.";cer.checked=r<=0.005};
+     ps&&ps.addEventListener("change",()=>upd(true));mo.addEventListener("input",()=>upd(false));upd(!p);
+     setTimeout(()=>mo.focus(),30)}});
+}
+function gastoForm(g,neg){
+  neg=neg||NEG();const nuevo=!g;g=g||{fecha:today(),categoria:neg==="merchy"?"Otros":"Filamento",metodo:"Yape",negocio:neg||"m3d"};
+  openForm(nuevo?"Registrar gasto":"Editar gasto",
+   `<label class="full">Concepto<input id="f-concepto" name="concepto" required value="${esc(g.concepto)}" placeholder="Ej. 3 kg PLA negro"></label>`+
+   `<label>Monto (S/)<input id="f-monto" name="monto" type="number" step="0.01" min="0.01" inputmode="decimal" required value="${esc(g.monto??"")}"></label>`+
+   field("Fecha","fecha",g.fecha,"date")+
+   `<div class="full"><div class="muted" style="font-size:12px;margin-bottom:4px">Categoría</div><div class="chipsel">${CATS_GASTO.map(c=>`<label><input type="radio" name="categoria" value="${esc(c)}" ${c===g.categoria?"checked":""}><span>${esc(c)}</span></label>`).join("")}</div></div>`+
+   sel("Pagado con","metodo",METODOS,g.metodo||"Yape")+field("Proveedor (opcional)","proveedor",g.proveedor)+
+   `<input type="hidden" id="f-negocio" name="negocio" value="${g.negocio||"m3d"}"><div class="full muted" style="font-size:12px">Gasto de <b>${({merchy:"Merchy Prints",n3d:"Nathan3D"})[g.negocio]||"Mundo 3D"}</b></div>`,
+   async d=>{const data={concepto:d.concepto.trim(),monto:N(d.monto),fecha:d.fecha,categoria:d.categoria||"Otros",metodo:d.metodo,proveedor:d.proveedor||"",negocio:d.negocio||"m3d"};
+     if(nuevo){await db.collection("gastos").add(data);toast(`Gasto de ${soles(data.monto)} registrado`)}else{await db.collection("gastos").doc(g.id).update(data);toast("Gasto guardado")}},
+   nuevo?null:async()=>{await db.collection("gastos").doc(g.id).delete();toast("Gasto eliminado")},
+   {again:nuevo?()=>gastoForm(null,(document.querySelector("#f-negocio")||{}).value):null,wire:f=>setTimeout(()=>f.querySelector("#f-concepto").focus(),30)});
+}
+function movimientos(){
+  const out=[];
+  S.pedidos.forEach(p=>{
+    if(+p.adelanto>0)out.push({fecha:p.fechaAdelanto||p.creado||"",monto:+p.adelanto,tipo:"Adelanto",p});
+    const pg=Array.isArray(p.pagos)?p.pagos:[];const enPagos=pg.reduce((a,x)=>a+(+x.monto||0),0);
+    pg.forEach(x=>out.push({fecha:x.fecha,monto:+x.monto,tipo:"Saldo",metodo:x.metodo,p}));
+    const resto=(+p.segundo||0)-enPagos;
+    if(resto>0.005)out.push({fecha:p.fechaSaldo||p.entrega||p.creado||"",monto:resto,tipo:"Saldo",p});
+    if(p.status==="COMPLETADO"&&saldo(p)>0.005)out.push({fecha:p.fechaSaldo||p.entrega||p.creado||"",monto:saldo(p),tipo:"Saldo",est:true,p});
+  });
+  return out;
+}
+function resumenMes(m){
+  const ing=movimientos().filter(x=>(x.fecha||"").startsWith(m));
+  const gas=S.gastos.filter(g=>(g.fecha||"").startsWith(m));
+  const cobrado=ing.reduce((a,x)=>a+x.monto,0),estimado=ing.filter(x=>x.est).reduce((a,x)=>a+x.monto,0);
+  const gastos=gas.reduce((a,g)=>a+(+g.monto||0),0);
+  const ventas=S.pedidos.filter(p=>(p.creado||"").startsWith(m));
+  return {ing,gas,cobrado,estimado,gastos,res:cobrado-gastos,ventas,vendido:ventas.reduce((a,p)=>a+(+p.total||0),0),
+    entregados:S.pedidos.filter(p=>p.status==="COMPLETADO"&&((p.fechaSaldo||p.entrega||"").startsWith(m))).length};
+}
+
+function invForm(i){
+  const nuevo=!i;i=i||{tipo:"Filamento",unidad:"kg"};
+  openForm(nuevo?"Nuevo material":i.nombre,field("Nombre","nombre",i.nombre,"text","required")+sel("Tipo","tipo",["Filamento","Resina","Pintura","Empaque","Repuesto","Otro"],i.tipo)+
+   field("Stock","stock",i.stock??"","number",'step="0.01"')+field("Unidad","unidad",i.unidad)+field("Mínimo","minimo",i.minimo??"","number",'step="0.01"')+field("Costo unitario (S/)","costo",i.costo??"","number",'step="0.01"'),
+   async d=>{const data={...d,stock:N(d.stock),minimo:N(d.minimo),costo:N(d.costo)};
+     if(nuevo){await db.collection("inventario").add(data);toast("Material agregado")}else{await db.collection("inventario").doc(i.id).update(data);toast("Material guardado")}},
+   nuevo?null:async()=>{await db.collection("inventario").doc(i.id).delete();toast("Material eliminado")});
+}
+function freeForm(r){
+  const nuevo=!r;r=r||{estado:"Sin empezar",fuente:"MAIL"};
+  openForm(nuevo?"Nuevo encargo freelance":r.cliente,field("Cliente","cliente",r.cliente,"text","required")+field("Pedido","pedido",r.pedido)+field("País","pais",r.pais)+
+   sel("Canal","fuente",["MAIL","WSP","INSTAGRAM"],r.fuente)+sel("Estado","estado",["Sin empezar","En progreso","Terminado"],r.estado)+field("Entrega","entrega",r.entrega,"date")+
+   field("Precio (US$)","precio",r.precio??"","number",'step="0.01"')+field("Adelanto (US$)","adelanto",r.adelanto??"","number",'step="0.01"'),
+   async d=>{const data={...d,precio:N(d.precio),adelanto:N(d.adelanto)};if(nuevo){await db.collection("freelance").add(data);toast("Encargo creado")}else{await db.collection("freelance").doc(r.id).update(data);toast("Encargo guardado")}},
+   nuevo?null:async()=>{await db.collection("freelance").doc(r.id).delete();toast("Encargo eliminado")});
+}
+
+/* ---------- render y eventos ---------- */
+views.inicio=function(){
+  const mk=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"),m=mk(new Date());
+  const m3=RAW.pedidos.filter(p=>!esMPDirecto(p)&&p.negocio!=="n3d"),n3=pedidosN3D(),n3m=n3.filter(p=>(p.creado||"").startsWith(m)),mp=RAW.pedidos.filter(esMerchy).map(p=>esMPDirecto(p)?p:virtM3D(p));
+  const a3=m3.filter(abierto),d3=m3.reduce((a,p)=>a+deuda(p),0),t=today(),v3=a3.filter(p=>p.entrega&&p.entrega<t).length;
+  const mpm=mp.filter(p=>(p.creado||"").startsWith(m)),gm=mpm.reduce((a,p)=>a+ventaMP(p)-costoProvDe(p),0);
+  const h=new Date().getHours(),sal=h<12?"Buenos días":h<19?"Buenas tardes":"Buenas noches";
+  return `<div class="home"><div><div class="eyebrow">${sal}</div><h1>¿Con qué negocio trabajas hoy?</h1></div>
+  <div class="bigs">
+    <a class="big m3d" href="#resumen" data-modo="m3d"><div><div class="bs">Impresión 3D</div><div class="bt">Mundo 3D</div></div>
+      <div class="bk"><div><b>${a3.length}</b><span>en curso</span></div><div><b>${soles(d3)}</b><span>por cobrar</span></div><div><b>${v3}</b><span>vencidos</span></div></div><div class="go">Entrar →</div></a>
+    <a class="big mp" href="#merchy" data-modo="mp"><div><div class="bs">Merchandising</div><div class="bt">Merchy Prints</div></div>
+      <div class="bk"><div><b>${mpm.length}</b><span>pedidos del mes</span></div><div><b>${soles(gm)}</b><span>ganancia del mes</span></div><div><b>${soles(mp.reduce((a,p)=>a+deuda(p),0))}</b><span>por cobrar</span></div></div><div class="go">Entrar →</div></a>
+    <a class="big n3" href="#nathan" data-modo="n3d"><div><div class="bs">Diseño 3D</div><div class="bt">Nathan3D</div></div>
+      <div class="bk"><div><b>${n3m.length}</b><span>pedidos del mes</span></div><div><b>${soles(n3m.reduce((a,p)=>a+(+p.total||0),0))}</b><span>ventas del mes</span></div><div><b>${soles(n3.reduce((a,p)=>a+deuda(p),0))}</b><span>por cobrar</span></div></div><div class="go">Entrar →</div></a>
+  </div>
+</div>`};
+const comprasMerchy=()=>RAW.pedidos.filter(p=>esMerchy(p)&&!esMPDirecto(p)&&costoDe(p)>0).map(p=>({fecha:p.creado||"",concepto:`Compra a Merchy Prints · #${p.num} ${p.cliente||""}`,categoria:"Compras a Merchy Prints",monto:costoDe(p),auto:true,pid:p.id}));
+const disenosPagados=()=>RAW.pedidos.filter(p=>p.n3d&&+p.n3dPago>0&&p.negocio!=="n3d"&&(MODE==="mp"?esMPDirecto(p):!esMPDirecto(p))).map(p=>({fecha:p.creado||"",concepto:`Diseño Nathan3D · #${p.num} ${p.cliente||""}`,categoria:"Diseño Nathan3D",monto:+p.n3dPago,auto:true,pid:p.id}));
+const autoGastos=()=>(MODE==="m3d"?[...comprasMerchy(),...disenosPagados()]:MODE==="mp"?disenosPagados():[]).map(g=>({...g,negocio:NEG()}));
+views.nathan=function(){
+  const now=new Date(),mk=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"),m=mk(now);
+  const P=S.pedidos,R=resumenMes(m),act=P.filter(abierto),t=today(),venc=act.filter(p=>p.entrega&&p.entrega<t);
+  const porCobrar=P.reduce((a,p)=>a+deuda(p),0),vm=R.ventas.reduce((a,p)=>a+(+p.total||0),0);
+  const origen=p=>p._virt?`<span class="pill n3">de ${esc(p.origen3)}</span>`:`<span class="pill">cliente directo</span>`;
+  const row=p=>`<tr class="click" data-edit="${esc(p.id)}"><td>${p.num}</td><td><b>${esc(p.cliente)}</b> ${origen(p)}<div class="muted" style="font-size:12px">${esc(p.pedido)}</div></td><td>${pill(p.status)}</td><td>${entregaCell(p)}</td><td class="r">${soles(p.total)}</td><td class="r">${deuda(p)?`<b>${soles(deuda(p))}</b>`:"—"}</td><td>${deuda(p)?`<button class="btn sm" data-pago="${esc(p.id)}">Cobrar</button>`:""}</td></tr>`;
+  return `<div class="top"><div><div class="eyebrow">Nathan3D</div><h1>Dashboard de diseño</h1><div class="muted" style="font-size:13px">Empresa independiente. Atiende a sus propios clientes y a Mundo 3D o Merchy Prints cuando un pedido necesita diseño.</div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="gasto">− Registrar gasto</button><button class="btn primary" data-act="nuevo">+ Nuevo pedido</button></div></div>
+  <div class="kpis">
+    <div class="kpi"><div class="l">Ventas del mes</div><div class="v">${soles(vm)}</div><div class="s">${R.ventas.length} pedidos · ${R.ventas.filter(p=>p._virt).length} de las otras empresas</div></div>
+    <div class="kpi"><div class="l">Cobrado en el mes</div><div class="v ok">${soles(R.cobrado)}</div><div class="s">${R.ing.length} pagos</div></div>
+    <a class="kpi link" href="#cobros"><div class="l">Por cobrar</div><div class="v">${soles(porCobrar)}</div><div class="s">${P.filter(p=>deuda(p)>0).length} pedidos con saldo</div></a>
+    <div class="kpi"><div class="l">Gastos del mes</div><div class="v bad">${soles(R.gastos)}</div><div class="s">${R.gas.length} registros</div></div>
+    <div class="kpi ${R.res<0?"alert":""}"><div class="l">Resultado del mes</div><div class="v">${soles(R.res)}</div><div class="s">cobrado menos gastos</div></div>
+    <div class="kpi ${venc.length?"alert":""}"><div class="l">En curso</div><div class="v">${act.length}</div><div class="s">${venc.length} vencidos</div></div>
+  </div>
+  ${visuales()}
+  <div class="panel"><h2>Pedidos en curso</h2>${act.length?`<div class="tbl"><table><thead><tr><th>#</th><th>Cliente / pedido</th><th>Etapa</th><th>Entrega</th><th class="r">Total</th><th class="r">Saldo</th><th></th></tr></thead><tbody>${act.sort((a,b)=>(a.entrega||"9").localeCompare(b.entrega||"9")).map(row).join("")}</tbody></table></div>`:`<div class="empty">No hay diseños en curso. Crea uno con <b>+ Nuevo pedido</b>, o activa “Diseño con Nathan3D” en un pedido de Mundo 3D o Merchy Prints.</div>`}</div>`};
+function visuales(){
+  const now=new Date(),mk=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"),cm=mk(now);
+  const venta=p=>MODE==="mp"?ventaMP(p):(+p.total||0);
+  const ms=[];for(let i=5;i>=0;i--)ms.push(mk(new Date(now.getFullYear(),now.getMonth()-i,1)));
+  const D=ms.map(mm=>({mm,v:S.pedidos.filter(p=>(p.creado||"").startsWith(mm)).reduce((a,p)=>a+venta(p),0),g:S.gastos.filter(g=>(g.fecha||"").startsWith(mm)).reduce((a,g)=>a+(+g.monto||0),0)}));
+  const mx=Math.max(1,...D.map(d=>Math.max(d.v,d.g)));
+  const W=560,H=210,base=180,top=26,gw=W/6,bw=Math.min(28,gw*0.3),k=n=>n>=1000?(n/1000).toFixed(n>=10000?0:1)+"k":Math.round(n);
+  const lab=mm=>{const t=new Date(mm+"-01T00:00").toLocaleDateString("es-PE",{month:"short"});return t.charAt(0).toUpperCase()+t.slice(1).replace(".","")};
+  const svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Ventas y gastos de los últimos 6 meses">
+    <line x1="0" x2="${W}" y1="${base}" y2="${base}" style="stroke:var(--line)"/>
+    ${D.map((d,i)=>{const cx=gw*i+gw/2,hv=(base-top)*d.v/mx,hg=(base-top)*d.g/mx;
+      return `<g><rect class="bar" x="${cx-bw-1}" y="${base-hv}" width="${bw}" height="${Math.max(hv,0)}" rx="3" style="fill:var(--chart)"><title>${esc(lab(d.mm))}: ventas ${soles(d.v)}</title></rect>
+      <rect class="bar" x="${cx+1}" y="${base-hg}" width="${bw}" height="${Math.max(hg,0)}" rx="3" style="fill:var(--chart2)"><title>${esc(lab(d.mm))}: gastos ${soles(d.g)}</title></rect>
+      ${d.v?`<text class="${d.mm===cm?"vl":""}" x="${cx-bw/2-1}" y="${base-hv-6}" text-anchor="middle">${k(d.v)}</text>`:""}
+      <text x="${cx}" y="${base+18}" text-anchor="middle" style="${d.mm===cm?"font-weight:700;fill:var(--fg)":""}">${esc(lab(d.mm))}</text></g>`}).join("")}</svg>`;
+  const act=S.pedidos.filter(abierto),cnt={};act.forEach(p=>{cnt[p.status]=(cnt[p.status]||0)+1});
+  const et=STAGES.filter(s=>cnt[s]),em=Math.max(1,...Object.values(cnt));
+  const hb=(l,v,max,txt)=>`<div class="hb" title="${esc(l)}: ${esc(txt)}"><span>${esc(l)}</span><div class="hbt"><div class="hbf" style="width:${Math.max(3,v/max*100)}%"></div></div><b>${esc(txt)}</b></div>`;
+  const t90=new Date();t90.setDate(t90.getDate()-90);const d90=t90.toISOString().slice(0,10),cl={};
+  S.pedidos.filter(p=>(p.creado||"")>=d90).forEach(p=>{const n=p.cliente||"Sin nombre";cl[n]=(cl[n]||0)+venta(p)});
+  const tc=Object.entries(cl).sort((a,b)=>b[1]-a[1]).slice(0,6),tm=Math.max(1,...tc.map(x=>x[1]));
+  const cob=S.pedidos.reduce((a,p)=>a+Math.min(venta(p),(+p.adelanto||0)+(+p.segundo||0)),0),pend=S.pedidos.reduce((a,p)=>a+deuda(p),0);
+  return `<div class="viz">
+    <div class="panel"><h2>Ventas y gastos · últimos 6 meses</h2><div class="leg"><span><i style="background:var(--chart)"></i>Ventas</span><span><i style="background:var(--chart2)"></i>Gastos</span></div>${svg}</div>
+    <div class="panel"><h2>En curso por etapa</h2>${et.length?et.map(s=>hb(s,cnt[s],em,String(cnt[s]))).join(""):`<div class="muted">No hay pedidos en curso.</div>`}
+      <h2 style="margin-top:16px">Por cobrar</h2>${hb("Pendiente",pend,Math.max(1,pend+cob),soles(pend))}</div>
+    <div class="panel"><h2>Mejores clientes · 90 días</h2>${tc.length?tc.map(([n,v])=>hb(n,v,tm,soles(v))).join(""):`<div class="muted">Sin ventas en los últimos 90 días.</div>`}</div>
+  </div>`;
+}
+for(const k of ["resumen","balance","merchy","nathan"]){const f=views[k];views[k]=function(){const P=S.pedidos,G=S.gastos;S.gastos=[...G,...autoGastos()];try{return f.call(views)}finally{S.pedidos=P;S.gastos=G}}}
+const cliDelNegocio=c=>(c.negocio||"m3d")===NEG()||pedidosDe(c).length>0;
+{const f=views.clientes;views.clientes=function(){const C=S.clientes;S.clientes=C.filter(cliDelNegocio);try{return f.call(views)}finally{S.clientes=C}}}
+const VALID=Object.keys(views).filter(k=>!k.startsWith("_"));
+function cur(){const h=location.hash.slice(1);return VALID.includes(h)?h:"inicio"}
+function render(){
+  const v=cur();document.body.classList.toggle("home",v==="inicio");
+  if(v==="merchy")setModo("mp");else if(v==="nathan"||v==="freelance")setModo("n3d");else if(v==="resumen"||v==="inventario")setModo("m3d");
+  for(const m of ["m3d","mp","n3d"])document.body.classList.toggle(m+"mode",MODE===m&&v!=="inicio");
+  $(".brand").innerHTML=({mp:"Merchy Prints",n3d:"Nathan3D",m3d:"Mundo 3D"})[MODE]+"<small>ERP · Perú</small>";
+  document.querySelectorAll("nav.side a").forEach(a=>a.classList.toggle("on",a.dataset.v===v));
+  $("#n-pedidos").textContent=S.pedidos.filter(abierto).length||"";
+  $("#n-prod").textContent="";
+  $("#n-cobros").textContent=S.pedidos.filter(p=>deuda(p)>0).length||"";
+  $("#n-clientes").textContent=S.clientes.filter(cliDelNegocio).length||"";
+  $("#n-inv").textContent=S.inventario.filter(i=>(+i.stock||0)<=(+i.minimo||0)).length||"";
+  $("#n-merchy").textContent=S.pedidos.filter(p=>esMerchy(p)&&abierto(p)).length||"";
+  $("#n-free").textContent=S.freelance.filter(r=>r.estado!=="Terminado").length||"";
+  const m=$("#main");
+  if(S.error){m.innerHTML=`<div class="empty">${esc(S.error)}</div>`;return}
+  if(!S.ready){m.innerHTML=`<div class="empty">Cargando datos…</div>`;return}
+  const fid=document.activeElement&&document.activeElement.id,pos=document.activeElement&&document.activeElement.selectionStart;
+  m.innerHTML=views[v]();
+  if(v==="pedidos"){$("#pst").value=views._pf.st;$("#pneg").value=views._pf.neg||"todos"}if(v==="clientes"&&$("#csort"))$("#csort").value=views._co.sort;
+  if(fid&&document.getElementById(fid)){const e=document.getElementById(fid);e.focus();try{e.setSelectionRange(pos,pos)}catch(_){}}
+}
+window.addEventListener("hashchange",()=>{if(cur()!=="clientes")views._cli=null;render()});
+document.addEventListener("keydown",e=>{if(e.key==="n"&&!e.metaKey&&!e.ctrlKey&&!e.altKey&&!$("#dlg").open&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)&&db){e.preventDefault();pedidoForm(null,null,MODE==="mp")}});
+document.addEventListener("input",e=>{
+  if(e.target.id==="pq"){views._pf.q=e.target.value;render()}
+  if(e.target.id==="cq"){views._co.q=e.target.value;render()}
+});
+document.addEventListener("change",e=>{if(e.target.id==="pst"){views._pf.st=e.target.value;render()}if(e.target.id==="pneg"){views._pf.neg=e.target.value;render()}if(e.target.id==="csort"){views._co.sort=e.target.value;render()}});
+document.addEventListener("click",async e=>{
+  if(!e.target.closest("#fabmenu,.fab"))$("#fabmenu").hidden=true;
+  const t=e.target.closest("[data-mm],[data-bm],[data-act],[data-editcli],[data-nuevopara],[data-edit],[data-mv],[data-pago],[data-inv],[data-stk],[data-gasto],[data-free],[data-cli]");if(!t||!db)return;
+  const byId=(arr,id)=>arr.find(x=>x.id===id);
+  try{
+  if(t.dataset.bm){views._bm=t.dataset.bm;render();return}
+  if(t.dataset.mm){views._mm=t.dataset.mm;render();return}
+  if(t.dataset.act!=="fab")$("#fabmenu").hidden=true;
+  if(t.dataset.act==="fab"){const m=$("#fabmenu");m.hidden=!m.hidden;t.setAttribute("aria-expanded",String(!m.hidden))}
+  else if(t.dataset.act==="cobrar")pagoForm();
+  else if(t.dataset.act==="nuevo")pedidoForm(null,null,MODE==="mp");
+  else if(t.dataset.act==="nuevomerchy")pedidoForm(null,null,true);
+  else if(t.dataset.act==="gastomerchy")gastoForm(null,"merchy");
+  else if(t.dataset.act==="cliente")clienteForm(null,id=>{views._cli=id;location.hash="clientes";render()});
+  else if(t.dataset.act==="volver"){views._cli=null;render()}
+  else if(t.dataset.act==="migrar")await migrarClientes(t);
+  else if(t.dataset.editcli)clienteForm(byId(S.clientes,t.dataset.editcli));
+  else if(t.dataset.nuevopara)pedidoForm(null,t.dataset.nuevopara);
+  else if(t.dataset.act==="inv")invForm();
+  else if(t.dataset.act==="gasto")gastoForm();
+  else if(t.dataset.act==="free")freeForm();
+  else if(t.dataset.edit)pedidoForm(byId(S.pedidos,t.dataset.edit));
+  else if(t.dataset.pago)pagoForm(byId(S.pedidos,t.dataset.pago));
+  else if(t.dataset.inv)invForm(byId(S.inventario,t.dataset.inv));
+  else if(t.dataset.gasto)gastoForm(byId(S.gastos,t.dataset.gasto));
+  else if(t.dataset.free)freeForm(byId(S.freelance,t.dataset.free));
+  else if(t.dataset.cli)abrirCliente(t.dataset.cli);
+  else if(t.dataset.mv){const p=byId(S.pedidos,t.dataset.id);const i=Math.min(STAGES.length-1,Math.max(0,STAGES.indexOf(p.status)+ +t.dataset.mv));t.disabled=true;
+    await db.collection("pedidos").doc(p.id).update(p._virt?{[p._virt+"Status"]:STAGES[i]}:{status:STAGES[i]});toast(`#${p.num} → ${STAGES[i]}`)}
+  else if(t.dataset.stk){const it=byId(S.inventario,t.dataset.id);t.disabled=true;await db.collection("inventario").doc(it.id).update({stock:Math.max(0,(+it.stock||0)+ +t.dataset.stk)})}
+  }catch(err){toast("No se pudo guardar: "+(err.message||err.code||"error"));render()}
+});
+
+document.addEventListener("click",e=>{if(e.target.closest("[data-logout]")){e.preventDefault();SheetDB.logout()}});
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+(async()=>{
+  render();
+  db=await SheetDB.connect();
+  const timer=setTimeout(()=>{if(!S.ready){S.error="Los datos tardan en cargar. Revisa tu conexión y vuelve a abrir la página.";render()}},20000);
+  let pend=new Set(["pedidos","clientes","freelance","inventario","gastos"]);
+  for(const c of pend){
+    db.collection(c).onSnapshot(snap=>{const rows=snap.docs.map(d=>({id:d.id,...d.data()}));if(c in RAW){RAW[c]=rows;proyectar()}else S[c]=rows;pend.delete(c);if(!pend.size){S.ready=true;clearTimeout(timer)}render()},
+      err=>{clearTimeout(timer);S.error=err.code==="unauthenticated"?"La clave cambió. Cierra sesión y vuelve a entrar.":(err.message||"No se pudieron cargar los datos ("+err.code+").");render()});
+  }
+})();
+</script>
+
+</body></html>
